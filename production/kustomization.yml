@@ -35,36 +35,36 @@ helmCharts:
   releaseName: order
   repo: order
   valuesFile: application/order/values.yaml
-# - name: health-checker
-#   releaseName: health-checker
-#   repo: health-checker
-#   valuesFile: application/health-checker/values.yaml
-# - name: invoice-generator
-#   releaseName: invoice-generator
-#   repo: invoice-generator
-#   valuesFile: application/invoice-generator/values.yaml
-# - name: notificator
-#   releaseName: notificator
-#   repo: notificator
-#   valuesFile: application/notificator/values.yaml
+- name: health-checker
+  releaseName: health-checker
+  repo: health-checker
+  valuesFile: application/health-checker/values.yaml
+- name: invoice-generator
+  releaseName: invoice-generator
+  repo: invoice-generator
+  valuesFile: application/invoice-generator/values.yaml
+- name: notificator
+  releaseName: notificator
+  repo: notificator
+  valuesFile: application/notificator/values.yaml
 
 
 images:
-- name: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
-  newName: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
+- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
+  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
   newTag: latest
-- name: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
-  newName: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
+- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
+  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
   newTag: latest
-- name: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
-  newName: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
+- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
+  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
   newTag: latest
-- name: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
-  newName: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
+- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
+  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
   newTag: v10
-- name: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
-  newName: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
+- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
+  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
   newTag: latest
-- name: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
-  newName: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
+- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
+  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
   newTag: latest

@@ -1,5 +1,5 @@
 identityServerDeployment:
-  image: 968225077300.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
+  image: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
   containerPort: 4443
   nodePort: 30004
   previewNodePort: 30005
