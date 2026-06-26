@@ -1,0 +1,51 @@
+{{- /* ADR-0007 — ScaledObject replaces hpa.yml for invoice-generator                   */}}
+{{- /* Trigger 1: aws-sqs-queue (InvoiceQueue) — primary signal                        */}}
+{{- /* Trigger 2: cpu — secondary safety net (reuses averageCpuUtilization value)      */}}
+{{- /* identityOwner: operator — reuses node instance role (AmazonSQSFullAccess)       */}}
+{{- /* behavior preserved via advanced.horizontalPodAutoscalerConfig.behavior           */}}
+{{- /* hpa.yml removed in this same changeset to avoid two HPAs on the same target     */}}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: argocd
+    adr: ADR-0007
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}
+  minReplicaCount: {{ .Values.invoiceGeneratorDeployment.autoScaling.minReplicas }}
+  maxReplicaCount: {{ .Values.invoiceGeneratorDeployment.autoScaling.maxReplicas }}
+  pollingInterval:  {{ .Values.invoiceGeneratorDeployment.autoScaling.keda.pollingInterval }}
+  cooldownPeriod:   {{ .Values.invoiceGeneratorDeployment.autoScaling.keda.cooldownPeriod }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          {{- toYaml .Values.invoiceGeneratorDeployment.autoScaling.scaleDown | nindent 10 }}
+        scaleUp:
+          {{- toYaml .Values.invoiceGeneratorDeployment.autoScaling.scaleUp | nindent 10 }}
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        # InvoiceQueue — same-account 794038226274, us-east-1
+        # Confirmed in production/infrastructure/config-map.yml
+        queueURL: https://sqs.us-east-1.amazonaws.com/794038226274/InvoiceQueue
+        awsRegion: us-east-1
+        # queueLength: target messages per replica. At 10 msgs/replica, with maxReplicas=3
+        # and minReplicas=1, KEDA will scale 1→2 at 10 msgs, 2→3 at 20 msgs.
+        queueLength: "{{ .Values.invoiceGeneratorDeployment.autoScaling.keda.queueLength }}"
+        # activationQueueLength: minimum depth before ScaledObject activates (> 0 msgs)
+        activationQueueLength: "{{ .Values.invoiceGeneratorDeployment.autoScaling.keda.activationQueueLength }}"
+        # identityOwner: operator — KEDA operator reads SQS using the node instance role.
+        # Phase 2 hardening: replace with TriggerAuthentication + dedicated IAM role
+        # (sqs:GetQueueAttributes + sqs:GetQueueUrl restricted to InvoiceQueue ARN).
+        identityOwner: operator
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        # Secondary safety net: scale if CPU exceeds threshold even when queue is empty.
+        value: "{{ .Values.invoiceGeneratorDeployment.autoScaling.averageCpuUtilization }}"
