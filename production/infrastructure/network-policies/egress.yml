@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: egress-network-policy
-  namespace: nsse
+  namespace: dpe
 spec:
   podSelector: {}
   policyTypes:
@@ -11,7 +11,7 @@ spec:
     - to:
       - podSelector:
           matchLabels:
-            application: not-so-simple-ecommerce
+            application: devopsproject-ecommerce
       ports:
       - port: 4443
     - to:

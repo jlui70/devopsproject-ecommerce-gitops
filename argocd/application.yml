@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: not-so-simple-ecommerce
+  name: devopsproject-ecommerce
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/kenerry-serain/not-so-simple-ecommerce-gitops
+    repoURL: https://github.com/jlui70/devopsproject-ecommerce-gitops
     targetRevision: HEAD
     path: production
   destination:
     server: https://kubernetes.default.svc
-    namespace: nsse
+    namespace: dpe
   syncPolicy:
     automated:
       prune: true

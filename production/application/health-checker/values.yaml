@@ -1,11 +1,11 @@
 healthCheckerDeployment:
-  image: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
+  image: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
   containerPort: 4443
   nodePort: 30005
-  configMap: nsse-config-map-prod
+  configMap: dpe-config-map-prod
   replicaCount: 1
-  serviceAccount: nsse-sa-prod
-  imagePullSecrets: nsse-ecr-image-pull-credentials-prod
+  serviceAccount: dpe-sa-prod
+  imagePullSecrets: dpe-ecr-image-pull-credentials-prod
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: topology.kubernetes.io/zone
@@ -16,11 +16,11 @@ healthCheckerDeployment:
   volumes:
   - name: kestrel
     secret:
-      secretName: nsse-kestrel-certificate-prod
+      secretName: dpe-kestrel-certificate-prod
   volumeMounts: 
   - name: kestrel
     readOnly: true
-    mountPath: /nsse-backend/certificates/kestrel
+    mountPath: /dpe-backend/certificates/kestrel
   resources:
     requests:
       memory: "128Mi"

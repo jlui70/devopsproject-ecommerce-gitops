@@ -1,10 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: nsse
+namespace: dpe
 nameSuffix: -prod
-namePrefix: nsse-
+namePrefix: dpe-
 commonLabels:
-  application: not-so-simple-ecommerce
+  application: devopsproject-ecommerce
 configurations:
 - configurations/namereference.yml
 resources:
@@ -50,21 +50,21 @@ helmCharts:
 
 
 images:
-- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
-  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
+- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
   newTag: latest
-- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
-  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
+- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
   newTag: latest
-- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
-  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
+- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
   newTag: latest
-- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
-  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
-  newTag: v10
-- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
-  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
+- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
   newTag: latest
-- name: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
-  newName: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
+- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+  newTag: latest
+- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
   newTag: latest

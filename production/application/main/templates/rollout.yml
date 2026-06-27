@@ -8,7 +8,7 @@ spec:
   selector:
     matchLabels:
       app: {{ .Release.Name }}
-      application: not-so-simple-ecommerce
+      application: devopsproject-ecommerce
   strategy:
     blueGreen:
       activeService: {{ .Values.mainDeployment.activeServiceName }}
@@ -18,15 +18,15 @@ spec:
       abortScaleDownDelaySeconds: 30
       prePromotionAnalysis:
         templates:
-        - templateName: nsse-health-check-prod
+        - templateName: dpe-health-check-prod
         args:
         - name: url
-          value: https://{{ .Values.mainDeployment.previewServiceName }}.nsse.svc.cluster.local:{{ .Values.mainDeployment.containerPort }}/main/health
+          value: https://{{ .Values.mainDeployment.previewServiceName }}.dpe.svc.cluster.local:{{ .Values.mainDeployment.containerPort }}/main/health
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}
-        application: not-so-simple-ecommerce
+        application: devopsproject-ecommerce
     spec:
       topologySpreadConstraints:
       {{- range .Values.mainDeployment.topologySpreadConstraints }}

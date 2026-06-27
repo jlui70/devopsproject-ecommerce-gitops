@@ -1,16 +1,16 @@
 mainDeployment:
-  image: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
+  image: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
   containerPort: 4443
   nodePort: 30002
   previewNodePort: 30003
-  activeServiceName: nsse-main-prod
-  previewServiceName: nsse-main-preview-prod
+  activeServiceName: dpe-main-prod
+  previewServiceName: dpe-main-preview-prod
   blueGreen:
     autoPromotionEnabled: true
-  configMap: nsse-config-map-prod
+  configMap: dpe-config-map-prod
   replicaCount: 1
-  serviceAccount: nsse-sa-prod
-  imagePullSecrets: nsse-ecr-image-pull-credentials-prod
+  serviceAccount: dpe-sa-prod
+  imagePullSecrets: dpe-ecr-image-pull-credentials-prod
   autoScaling:
     minReplicas: 1
     maxReplicas: 3
@@ -45,17 +45,17 @@ mainDeployment:
   volumes:
   - name: kestrel
     secret:
-      secretName: nsse-kestrel-certificate-prod
+      secretName: dpe-kestrel-certificate-prod
   - name: mongo
     secret:
-      secretName: nsse-mongo-certificate-prod
+      secretName: dpe-mongo-certificate-prod
   volumeMounts: 
   - name: kestrel
     readOnly: true
-    mountPath: /nsse-backend/certificates/kestrel
+    mountPath: /dpe-backend/certificates/kestrel
   - name: mongo
     readOnly: true
-    mountPath: /nsse-backend/certificates/mongo
+    mountPath: /dpe-backend/certificates/mongo
   resources:
     requests:
       memory: "128Mi"

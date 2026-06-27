@@ -55,7 +55,7 @@ Atualize o `image pull secret` do ECR, para que os PODs consigam baixar as image
 de dentro das instâncias do Cluster.
 
 ```bash
-cd ./not-so-simple-ecommerce-gitops
+cd ./devopsproject-ecommerce-gitops
 kubectl create secret docker-registry ecr-image-pull-credentials \
     --docker-username=AWS \
     --docker-password=$(aws ecr get-login-password --region us-east-1) \

@@ -1,16 +1,16 @@
 orderDeployment:
-  image: <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
+  image: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
   containerPort: 4443
   nodePort: 30000
   previewNodePort: 30001
-  activeServiceName: nsse-order-prod
-  previewServiceName: nsse-order-preview-prod
+  activeServiceName: dpe-order-prod
+  previewServiceName: dpe-order-preview-prod
   blueGreen:
     autoPromotionEnabled: true
-  configMap: nsse-config-map-prod
+  configMap: dpe-config-map-prod
   replicaCount: 1
-  serviceAccount: nsse-sa-prod
-  imagePullSecrets: nsse-ecr-image-pull-credentials-prod
+  serviceAccount: dpe-sa-prod
+  imagePullSecrets: dpe-ecr-image-pull-credentials-prod
   autoScaling:
     minReplicas: 1
     maxReplicas: 3
@@ -45,11 +45,11 @@ orderDeployment:
   volumes:
   - name: kestrel
     secret:
-      secretName: nsse-kestrel-certificate-prod
+      secretName: dpe-kestrel-certificate-prod
   volumeMounts: 
   - name: kestrel
     readOnly: true
-    mountPath: /nsse-backend/certificates/kestrel
+    mountPath: /dpe-backend/certificates/kestrel
   resources:
     requests:
       memory: "256Mi"

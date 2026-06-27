@@ -8,7 +8,7 @@ spec:
   selector:
     matchLabels:
       app: {{ .Release.Name }}
-      application: not-so-simple-ecommerce
+      application: devopsproject-ecommerce
   strategy:
     blueGreen:
       activeService: {{ .Values.identityServerDeployment.activeServiceName }}
@@ -18,15 +18,15 @@ spec:
       abortScaleDownDelaySeconds: 30
       prePromotionAnalysis:
         templates:
-        - templateName: nsse-health-check-prod
+        - templateName: dpe-health-check-prod
         args:
         - name: url
-          value: https://{{ .Values.identityServerDeployment.previewServiceName }}.nsse.svc.cluster.local:{{ .Values.identityServerDeployment.containerPort }}/identity/health
+          value: https://{{ .Values.identityServerDeployment.previewServiceName }}.dpe.svc.cluster.local:{{ .Values.identityServerDeployment.containerPort }}/identity/health
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}
-        application: not-so-simple-ecommerce
+        application: devopsproject-ecommerce
     spec:
       topologySpreadConstraints:
       {{- range .Values.identityServerDeployment.topologySpreadConstraints }}

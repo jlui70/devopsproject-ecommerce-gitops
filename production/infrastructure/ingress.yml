@@ -4,16 +4,17 @@ metadata:
   name: ingress
   annotations:
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:<YOUR_ACCOUNT>:certificate/51e6d3fe-432d-451f-8928-3ddc91acc25b
+    # Preencher apos: terraform -chdir=devopsproject-ecommerce-iac/terraform/server output acm_certificate_arn
+    alb.ingress.kubernetes.io/certificate-arn: <TERRAFORM_OUTPUT:acm_certificate_arn>
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/load-balancer-name: nsse-ingress-prod
+    alb.ingress.kubernetes.io/load-balancer-name: dpe-ingress-prod
     alb.ingress.kubernetes.io/scheme: internal
-    external-dns.alpha.kubernetes.io/hostname: backend.devopsnanuvemweek.com
-    alb.ingress.kubernetes.io/security-groups: nsse-production-alb-security-group,nsse-production-worker-security-group
-    alb.ingress.kubernetes.io/conditions.nsse-main-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
-    alb.ingress.kubernetes.io/conditions.nsse-order-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
-    alb.ingress.kubernetes.io/conditions.nsse-identity-server-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
+    external-dns.alpha.kubernetes.io/hostname: backend.ecommerce.devopsproject.com.br
+    alb.ingress.kubernetes.io/security-groups: devopsproject-production-alb-security-group,devopsproject-production-worker-security-group
+    alb.ingress.kubernetes.io/conditions.dpe-main-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
+    alb.ingress.kubernetes.io/conditions.dpe-order-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
+    alb.ingress.kubernetes.io/conditions.dpe-identity-server-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
 spec:
   ingressClassName: alb
   rules:
@@ -24,21 +25,21 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: nsse-main-preview-prod
+            name: dpe-main-preview-prod
             port:
               number: 4443
       - path: /order
         pathType: Prefix
         backend:
           service:
-            name: nsse-order-preview-prod
+            name: dpe-order-preview-prod
             port:
               number: 4443
       - path: /identity
         pathType: Prefix
         backend:
           service:
-            name: nsse-identity-server-preview-prod
+            name: dpe-identity-server-preview-prod
             port:
               number: 4443
       # Active routes (production traffic)
@@ -46,41 +47,41 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: nsse-health-checker-prod
+            name: dpe-health-checker-prod
             port:
               number: 4443
       - path: /identity
         pathType: Prefix
         backend:
           service:
-            name: nsse-identity-server-prod
+            name: dpe-identity-server-prod
             port:
               number: 4443
       - path: /invoice
         pathType: Prefix
         backend:
           service:
-            name: nsse-invoice-generator-prod
+            name: dpe-invoice-generator-prod
             port:
               number: 4443
       - path: /main
         pathType: Prefix
         backend:
           service:
-            name: nsse-main-prod
+            name: dpe-main-prod
             port:
               number: 4443
       - path: /notificator
         pathType: Prefix
         backend:
           service:
-            name: nsse-notificator-prod
+            name: dpe-notificator-prod
             port:
               number: 4443
       - path: /order
         pathType: Prefix
         backend:
           service:
-            name: nsse-order-prod
+            name: dpe-order-prod
             port:
               number: 4443
