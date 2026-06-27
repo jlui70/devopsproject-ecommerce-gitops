@@ -1,111 +1,155 @@
-# Not So Simple Ecommerce GitOps
+# devopsproject-ecommerce GitOps
 
-Este é o repositório utilizado dentro do curso para gerenciar todos os manifestos
-da aplicação `not-so-simple-ecommerce`.
+Repositório GitOps que gerencia todos os manifestos Kubernetes da aplicação `devopsproject-ecommerce`.
 
-Este repositório utiliza helm charts para empacotar os microserviços e kustomize
-para gerenciar os arquivos de infraestrutura e compartilhados entre todos os charts.
+Utiliza **Helm charts** para empacotar cada microsserviço e **Kustomize** para aplicar overlays transversais (namespace `dpe`, prefixo `dpe-`, sufixo `-prod`, labels comuns e imagens centralizadas). O ArgoCD reconcilia este repositório continuamente contra o cluster Kubernetes (ADR-0002).
 
 ---
 
-## 🛠️ Configuração e Execução
+## Estrutura
 
-### 1. Build e Push das Imagens Docker
-
-Faça o build das imagens docker e envie para seus respectivos repositórios no ECR - se já não o fez.
-Lembre-se que os Dockerfiles não estão situados neste repositório, mas no repositório not-so-simple-ecommerce.
-
-📌 **Repositório:** [not-so-simple-ecommerce](https://github.com/kenerry-serain/not-so-simple-ecommerce)
-
-```bash
-cd ./not-so-simple-ecommerce
-
-# Order
-docker build -f src/services/NotSoSimpleEcommerce.Order/Dockerfile -t <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order .
-docker push <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/order
-
-# Main
-docker build -f src/services/NotSoSimpleEcommerce.Main/Dockerfile -t <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main .
-docker push <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/main
-
-# Identity Server
-docker build -f src/services/NotSoSimpleEcommerce.IdentityServer/Dockerfile -t <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server .
-docker push <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/identity-server
-
-# Health Checker
-docker build -f src/services/NotSoSimpleEcommerce.HealthChecker/Dockerfile -t <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker .
-docker push <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/health-checker
-
-# Notificator
-docker build -f src/workers/NotSoSimpleEcommerce. -t <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator .
-docker push <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/notificator
-
-# Invoice Generator
-docker build -f src/workers/NotSoSimpleEcommerce.InvoiceGenerator/Dockerfile -t <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator .
-docker push <YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/nsse/production/invoice-generator
+```
+devopsproject-ecommerce-gitops/
+├── argocd/
+│   ├── application.yml          # Application ArgoCD (ns argocd → ns dpe)
+│   └── argocd-cm-patch.yml      # Habilita --enable-helm no ArgoCD
+└── production/
+    ├── kustomization.yml        # namePrefix dpe-, nameSuffix -prod, images:
+    ├── configurations/
+    │   └── namereference.yml    # Resolve scaleTargetRef do HPA para o Rollout renomeado
+    ├── infrastructure/
+    │   ├── namespace.yml
+    │   ├── config-map.yml       # Variáveis de ambiente compartilhadas (preencher placeholders TF)
+    │   ├── service-account.yml
+    │   ├── ingress.yml          # ALB interno HTTPS:443, preview antes de active
+    │   ├── analysis-template.yml
+    │   ├── network-policies/
+    │   │   ├── ingress.yml
+    │   │   └── egress.yml
+    │   └── secrets/
+    │       ├── ecr-image-pull-credentials.yml
+    │       ├── kestrel-certificate.yml
+    │       └── mongo-certificate.yml
+    └── application/             # 1 Helm chart por microsserviço
+        ├── main/                # Rollout Blue/Green + HPA
+        ├── order/               # Rollout Blue/Green + HPA
+        ├── identity-server/     # Rollout Blue/Green + HPA
+        ├── health-checker/      # Deployment + Service
+        ├── invoice-generator/   # Deployment + KEDA ScaledObject
+        └── notificator/         # Deployment + KEDA ScaledObject
 ```
 
-**Atenção:** Substitua `<YOUR_ACCOUNT>` pela sua conta AWS.
-
 ---
 
-### 2. Atualização do Image Pull Secret
+## Pré-requisitos
 
-Atualize o `image pull secret` do ECR, para que os PODs consigam baixar as imagens dos repositórios privados do ECR
-de dentro das instâncias do Cluster.
+Antes de ativar o sync do ArgoCD, os passos abaixo devem estar concluídos:
+
+### 1. Stacks Terraform aplicadas
+
+As seguintes stacks devem estar em execução:
+
+- **ADR-0001** (networking) — VPC, subnets, Route53
+- **ADR-0002** (server) — cluster Kubernetes, ECR, ACM, ALB Controller, external-dns, ArgoCD instalados via Ansible
+- **ADR-0003** (serverless) — Aurora, RDS Proxy, DocumentDB, SQS, SNS, Secrets Manager
+
+### 2. Preencher placeholders no repositório
+
+Após o apply das stacks, substituir os placeholders nos manifests e commitar:
+
+#### `production/infrastructure/ingress.yml`
 
 ```bash
-cd ./devopsproject-ecommerce-gitops
+ACM_ARN=$(terraform -chdir=devopsproject-ecommerce-iac/terraform/server output -raw acm_certificate_arn)
+# Substituir <TERRAFORM_OUTPUT:acm_certificate_arn> pelo valor de $ACM_ARN
+```
+
+#### `production/infrastructure/config-map.yml`
+
+```bash
+RDS_PROXY=$(terraform -chdir=devopsproject-ecommerce-iac/terraform/serverless output -raw rds_proxy_endpoint)
+DOCDB=$(terraform -chdir=devopsproject-ecommerce-iac/terraform/serverless output -raw documentdb_cluster_endpoint)
+# Substituir os placeholders <TERRAFORM_OUTPUT:...> e <SECRETS_MANAGER:...> pelos valores reais
+# Senhas: recuperar do AWS Secrets Manager — nunca colar em plaintext no repositório
+```
+
+### 3. Criar Secrets no cluster
+
+```bash
+# ECR image pull credentials (renovar periodicamente)
 kubectl create secret docker-registry ecr-image-pull-credentials \
     --docker-username=AWS \
     --docker-password=$(aws ecr get-login-password --region us-east-1) \
-    --docker-server=<YOUR_ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com --dry-run=client \
-    -o yaml > production/secrets/ecr-image-pull-credentials.yml
+    --docker-server=794038226274.dkr.ecr.us-east-1.amazonaws.com \
+    --dry-run=client -o yaml \
+    > production/infrastructure/secrets/ecr-image-pull-credentials.yml
+
+# Certificado Kestrel (PFX) e CA do DocumentDB (PEM)
+# Gerar/obter os certificados e criar os secrets conforme processo documentado
 ```
 
-**Atenção:** Substitua `<YOUR_ACCOUNT>` pela sua conta AWS.
+### 4. Imagens publicadas no ECR
+
+O CI/CD (ADR-0005) deve ter executado ao menos uma build e publicado as imagens antes do primeiro sync. O ArgoCD não consegue criar pods sem imagens disponíveis no registry.
 
 ---
 
-### 3. Configuração Kube Config
+## Ativar o ArgoCD
+
+### 1. Aplicar o patch do ConfigMap
 
 ```bash
-aws ssm start-session --target <ANY_MASTER_INSTANCE_ID>
-sudo su
-cat /etc/kubernetes/admin.conf
+kubectl apply -f argocd/argocd-cm-patch.yml
 ```
 
-Copie o resultado do cat, para o arquivo /etc/kubernetes/admin.conf na sua máquina local e lembre-se
-de substituir o DNS do NLB por 127.0.0.1 e também adicionar o apontamento do endereço 127.0.0.1 para o 
-DNS do NLB no arquivo hosts da sua máquina.
+### 2. Registrar o repositório GitOps no ArgoCD
+
+```bash
+argocd repo add https://github.com/jlui70/devopsproject-ecommerce-gitops \
+    --username <github-user> \
+    --password <github-token>
+```
+
+### 3. Criar a Application
+
+```bash
+kubectl apply -f argocd/application.yml
+```
+
+O ArgoCD passará a reconciliar automaticamente (`automated: prune: true, selfHeal: true`) o path `production` deste repositório contra o namespace `dpe` do cluster.
 
 ---
 
-### 4. Teste da Conexão com o Cluster Kubernetes
-
-Para executar os manifestos deste repositório no Cluster Kubernetes a partir da sua máquina local, 
-primeiramente é necessário abrir um túnel com algum nó master mapeando localmente o kube-apiserver que estará 
-rodando na porta 6443 do nó localmente na mesma porta. Edite o arquivo `/etc/kubernetes/admin.conf` do passo anterior
-na sua máquina, substituindo o DNS do NLB por `127.0.0.1` e adicione o apontamento do endereço 127.0.0.1 para o 
-DNS do NLB no arquivo hosts da sua máquina e só então, abra o túnel. 
+## Acesso local ao cluster (via SSM Port Forward)
 
 ```bash
+# Obter o kubeconfig do nó control-plane via SSM
+aws ssm start-session --target <CONTROL_PLANE_INSTANCE_ID>
+sudo cat /etc/kubernetes/admin.conf
+# Copiar o conteúdo para ~/.kube/config e substituir o DNS do NLB por 127.0.0.1
+
+# Abrir túnel SSM para o kube-apiserver
 aws ssm start-session \
-    --target <ANY_MASTER_INSTANCE_ID> \
+    --target <CONTROL_PLANE_INSTANCE_ID> \
     --document-name AWS-StartPortForwardingSession \
     --parameters 'portNumber=6443,localPortNumber=6443'
-export KUBECONFIG=/etc/kubernetes/admin.conf
+
+export KUBECONFIG=~/.kube/config
 kubectl get nodes
 ```
 
-📌 **Observação:** Se precisar revisar o processo, consulte a aula `Aula 33-Acesso Local e Port Forwarding` do módulo 06.
-
 ---
 
-### 5. Aplicação dos Manifestos no Cluster Kubernetes
-
-Execute o comando abaixo para aplicar os manifestos no Cluster Kubernetes:
+## Rollback
 
 ```bash
-kustomize build --enable-helm | kubectl apply -f -
+# Reverter para o commit anterior (ArgoCD reconcilia automaticamente)
+git revert HEAD
+git push origin main
+```
+
+Durante uma promoção Blue/Green em andamento, abortar o Rollout mantém a versão active:
+
+```bash
+kubectl argo rollouts abort <rollout-name> -n dpe
 ```
