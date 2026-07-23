@@ -36,6 +36,8 @@ spec:
         envFrom:
         - configMapRef:
             name: {{.Values.notificatorDeployment.configMap}}
+        - secretRef:
+            name: {{.Values.notificatorDeployment.secret}}
         volumeMounts:
           {{- toYaml .Values.notificatorDeployment.volumeMounts | nindent 8 }}
         resources:

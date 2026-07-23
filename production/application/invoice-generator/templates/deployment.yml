@@ -36,6 +36,8 @@ spec:
         envFrom:
         - configMapRef:
             name: {{.Values.invoiceGeneratorDeployment.configMap}}
+        - secretRef:
+            name: {{.Values.invoiceGeneratorDeployment.secret}}
         volumeMounts:
           {{- toYaml .Values.invoiceGeneratorDeployment.volumeMounts | nindent 8 }}
         resources:

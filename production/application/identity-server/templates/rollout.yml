@@ -52,6 +52,8 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Values.identityServerDeployment.configMap }}
+        - secretRef:
+            name: {{ .Values.identityServerDeployment.secret }}
         volumeMounts:
           {{- toYaml .Values.identityServerDeployment.volumeMounts | nindent 8 }}
         resources:

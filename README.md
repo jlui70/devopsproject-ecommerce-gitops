@@ -80,7 +80,7 @@ DOCDB=$(terraform -chdir=devopsproject-ecommerce-iac/terraform/serverless output
 kubectl create secret docker-registry ecr-image-pull-credentials \
     --docker-username=AWS \
     --docker-password=$(aws ecr get-login-password --region us-east-1) \
-    --docker-server=794038226274.dkr.ecr.us-east-1.amazonaws.com \
+    --docker-server=692430448478.dkr.ecr.us-east-1.amazonaws.com \
     --dry-run=client -o yaml \
     > production/infrastructure/secrets/ecr-image-pull-credentials.yml
 

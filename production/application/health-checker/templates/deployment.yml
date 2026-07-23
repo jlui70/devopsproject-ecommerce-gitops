@@ -36,6 +36,8 @@ spec:
         envFrom:
         - configMapRef:
             name: {{.Values.healthCheckerDeployment.configMap}}
+        - secretRef:
+            name: {{.Values.healthCheckerDeployment.secret}}
         volumeMounts:
           {{- toYaml .Values.healthCheckerDeployment.volumeMounts | nindent 8 }}
         resources:

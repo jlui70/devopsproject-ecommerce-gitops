@@ -11,6 +11,8 @@ resources:
 - infrastructure/namespace.yml
 - infrastructure/config-map.yml
 - infrastructure/service-account.yml
+- infrastructure/secrets/cluster-secret-store.yml
+- infrastructure/secrets/app-secrets.yml
 - infrastructure/secrets/ecr-image-pull-credentials.yml
 - infrastructure/secrets/kestrel-certificate.yml
 - infrastructure/secrets/mongo-certificate.yml
@@ -50,21 +52,21 @@ helmCharts:
 
 
 images:
-- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
-  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
   newTag: latest
-- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
-  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
   newTag: latest
-- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
-  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
   newTag: latest
-- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
-  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
   newTag: latest
-- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
-  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
   newTag: latest
-- name: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
-  newName: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
   newTag: latest

@@ -1,0 +1,1 @@
+- [site/ stack — ADR-0005 + ADR-0006](project_site_stack.md) — CloudFront/S3/WAF/OIDC roles, two-phase apply required for continuous deployment policy

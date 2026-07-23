@@ -1,5 +1,5 @@
 mainDeployment:
-  image: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+  image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
   containerPort: 4443
   nodePort: 30002
   previewNodePort: 30003
@@ -8,6 +8,7 @@ mainDeployment:
   blueGreen:
     autoPromotionEnabled: true
   configMap: dpe-config-map-prod
+  secret: dpe-app-secrets-prod
   replicaCount: 1
   serviceAccount: dpe-sa-prod
   imagePullSecrets: dpe-ecr-image-pull-credentials-prod

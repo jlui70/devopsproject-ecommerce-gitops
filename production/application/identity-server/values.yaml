@@ -1,5 +1,5 @@
 identityServerDeployment:
-  image: 794038226274.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+  image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
   containerPort: 4443
   nodePort: 30004
   previewNodePort: 30005
@@ -8,6 +8,7 @@ identityServerDeployment:
   blueGreen:
     autoPromotionEnabled: true
   configMap: dpe-config-map-prod
+  secret: dpe-app-secrets-prod
   replicaCount: 1
   serviceAccount: dpe-sa-prod
   imagePullSecrets: dpe-ecr-image-pull-credentials-prod

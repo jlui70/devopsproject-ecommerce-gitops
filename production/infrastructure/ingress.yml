@@ -5,12 +5,12 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
     # Preencher apos: terraform -chdir=devopsproject-ecommerce-iac/terraform/server output acm_certificate_arn
-    alb.ingress.kubernetes.io/certificate-arn: <TERRAFORM_OUTPUT:acm_certificate_arn>
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/90a0afea-2403-4427-a10f-4e68f951a2be
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/load-balancer-name: dpe-ingress-prod
     alb.ingress.kubernetes.io/scheme: internal
-    external-dns.alpha.kubernetes.io/hostname: backend.ecommerce.devopsproject.com.br
+    external-dns.alpha.kubernetes.io/hostname: backend.ecommerce-devopsproject.com
     alb.ingress.kubernetes.io/security-groups: devopsproject-production-alb-security-group,devopsproject-production-worker-security-group
     alb.ingress.kubernetes.io/conditions.dpe-main-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
     alb.ingress.kubernetes.io/conditions.dpe-order-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
