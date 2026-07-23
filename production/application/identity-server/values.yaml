@@ -2,7 +2,7 @@ identityServerDeployment:
   image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
   containerPort: 4443
   nodePort: 30004
-  previewNodePort: 30005
+  previewNodePort: 30008
   activeServiceName: dpe-identity-server-prod
   previewServiceName: dpe-identity-server-preview-prod
   blueGreen:

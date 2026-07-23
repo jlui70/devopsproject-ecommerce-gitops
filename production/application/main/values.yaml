@@ -2,7 +2,7 @@ mainDeployment:
   image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
   containerPort: 4443
   nodePort: 30002
-  previewNodePort: 30003
+  previewNodePort: 30007
   activeServiceName: dpe-main-prod
   previewServiceName: dpe-main-preview-prod
   blueGreen:

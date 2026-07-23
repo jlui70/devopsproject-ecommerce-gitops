@@ -1,7 +1,7 @@
 notificatorDeployment:
   image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
   containerPort: 4443
-  nodePort: 30001
+  nodePort: 30006
   configMap: dpe-config-map-prod
   secret: dpe-app-secrets-prod
   replicaCount: 1
