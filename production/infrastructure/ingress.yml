@@ -11,7 +11,7 @@ metadata:
     alb.ingress.kubernetes.io/load-balancer-name: dpe-ingress-prod
     alb.ingress.kubernetes.io/scheme: internal
     external-dns.alpha.kubernetes.io/hostname: backend.ecommerce-devopsproject.com
-    alb.ingress.kubernetes.io/security-groups: devopsproject-production-alb-security-group,devopsproject-production-worker-security-group
+    alb.ingress.kubernetes.io/security-groups: sg-021c0b5ad7a66982e,sg-08d75886a8b71ed17
     alb.ingress.kubernetes.io/conditions.dpe-main-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
     alb.ingress.kubernetes.io/conditions.dpe-order-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
     alb.ingress.kubernetes.io/conditions.dpe-identity-server-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
