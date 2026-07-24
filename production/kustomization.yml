@@ -13,7 +13,6 @@ resources:
 - infrastructure/service-account.yml
 - infrastructure/secrets/cluster-secret-store.yml
 - infrastructure/secrets/app-secrets.yml
-- infrastructure/secrets/ecr-image-pull-credentials.yml
 - infrastructure/secrets/kestrel-certificate.yml
 - infrastructure/secrets/mongo-certificate.yml
 - infrastructure/ingress.yml
