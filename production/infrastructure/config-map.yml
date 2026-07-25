@@ -8,9 +8,9 @@ data:
   ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PATH: "/dpe-backend/certificates/kestrel/certificate.pfx"
   ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PASSWORD: "DevOpsNaNuvem0!"
 
-  BASEADDRESS__MAIN: "https://ecommerce-devopsproject.com/main"
-  BASEADDRESS__IDENTITY: "https://ecommerce-devopsproject.com/identity"
-  BASEADDRESS__ORDER: "https://ecommerce-devopsproject.com/order"
+  BASEADDRESS__MAIN: "https://backend.ecommerce-devopsproject.com/main"
+  BASEADDRESS__IDENTITY: "https://backend.ecommerce-devopsproject.com/identity"
+  BASEADDRESS__ORDER: "https://backend.ecommerce-devopsproject.com/order"
 
   LOCALSTACK__ISENABLED: "false"
 
