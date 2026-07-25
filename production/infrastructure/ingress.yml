@@ -5,13 +5,13 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
     # Preencher apos: terraform -chdir=devopsproject-ecommerce-iac/terraform/server output acm_certificate_arn
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/dc12fd78-d76c-4f6a-8bac-fadbb1ad8063
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/080bcb8a-80f4-40c4-aade-6a8a675a9713
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/load-balancer-name: dpe-ingress-prod
     alb.ingress.kubernetes.io/scheme: internal
     external-dns.alpha.kubernetes.io/hostname: backend.ecommerce-devopsproject.com
-    alb.ingress.kubernetes.io/security-groups: sg-08fa3efc1942be6e5,sg-0e67b10a1ab5fe83e
+    alb.ingress.kubernetes.io/security-groups: ecommerce-devopsproject-cluster-alb,ecommerce-devopsproject-cluster-worker
     alb.ingress.kubernetes.io/conditions.dpe-main-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
     alb.ingress.kubernetes.io/conditions.dpe-order-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
     alb.ingress.kubernetes.io/conditions.dpe-identity-server-preview-prod: '[{"field":"http-header","httpHeaderConfig":{"httpHeaderName":"x-preview","values":["true"]}}]'
