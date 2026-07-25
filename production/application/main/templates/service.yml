@@ -11,6 +11,7 @@ spec:
     app: {{ .Release.Name }}
   ports:
   - port: {{ .Values.mainDeployment.containerPort }}
+    name: https
     nodePort: {{ .Values.mainDeployment.nodePort }}
   - port: 8080
     targetPort: 8080

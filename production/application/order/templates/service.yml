@@ -11,6 +11,7 @@ spec:
     app: {{ .Release.Name }}
   ports:
   - port: {{ .Values.orderDeployment.containerPort }}
+    name: https
     nodePort: {{ .Values.orderDeployment.nodePort }}
   - port: 8080
     targetPort: 8080

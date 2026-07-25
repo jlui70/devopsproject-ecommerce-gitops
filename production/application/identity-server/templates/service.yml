@@ -11,6 +11,7 @@ spec:
     app: {{ .Release.Name }}
   ports:
   - port: {{ .Values.identityServerDeployment.containerPort }}
+    name: https
     nodePort: {{ .Values.identityServerDeployment.nodePort }}
   - port: 8080
     targetPort: 8080
