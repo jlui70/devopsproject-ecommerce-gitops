@@ -5,7 +5,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
     # Preencher apos: terraform -chdir=devopsproject-ecommerce-iac/terraform/server output acm_certificate_arn
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/080bcb8a-80f4-40c4-aade-6a8a675a9713
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/b2b26c57-d91e-4df2-99d8-e61fc53831e4
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/load-balancer-name: dpe-ingress-prod
