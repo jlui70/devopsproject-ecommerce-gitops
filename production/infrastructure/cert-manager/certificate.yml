@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kestrel-certificate
+  namespace: dpe
+spec:
+  secretName: dpe-kestrel-certificate-prod
+  duration: 8760h
+  renewBefore: 720h
+  commonName: dpe-backend.dpe.svc.cluster.local
+  dnsNames:
+    - "*.dpe.svc.cluster.local"
+    - "*.dpe"
+  issuerRef:
+    name: dpe-ca-issuer
+    kind: ClusterIssuer
+  privateKey:
+    algorithm: RSA
+    size: 2048

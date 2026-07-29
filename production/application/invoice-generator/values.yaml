@@ -66,8 +66,8 @@ invoiceGeneratorDeployment:
   livenessProbe:
     httpGet:
       path: /invoice/health
-      port: 4443
-      scheme: HTTPS
+      port: 8080
+      scheme: HTTP
     successThreshold: 1
     failureThreshold: 3
     initialDelaySeconds: 120
@@ -76,8 +76,8 @@ invoiceGeneratorDeployment:
   readinessProbe:
     httpGet:
       path: /invoice/health
-      port: 4443
-      scheme: HTTPS
+      port: 8080
+      scheme: HTTP
     successThreshold: 1
     failureThreshold: 3
     initialDelaySeconds: 3

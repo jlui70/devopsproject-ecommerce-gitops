@@ -5,8 +5,8 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: "Production"
   ASPNETCORE_URLS: "https://+:4443;http://+:8080"
-  ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PATH: "/dpe-backend/certificates/kestrel/certificate.pfx"
-  ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PASSWORD: "DevOpsNaNuvem0!"
+  ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PATH: "/dpe-backend/certificates/kestrel/tls.crt"
+  ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__KEYPATH: "/dpe-backend/certificates/kestrel/tls.key"
 
   BASEADDRESS__MAIN: "http://dpe-main-prod.dpe.svc.cluster.local:8080/main"
   BASEADDRESS__IDENTITY: "http://dpe-identity-server-prod.dpe.svc.cluster.local:8080/identity"

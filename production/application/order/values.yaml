@@ -61,8 +61,8 @@ orderDeployment:
   livenessProbe:
     httpGet:
       path: /order/health
-      port: 4443
-      scheme: HTTPS
+      port: 8080
+      scheme: HTTP
     successThreshold: 1
     failureThreshold: 3
     initialDelaySeconds: 120
@@ -71,8 +71,8 @@ orderDeployment:
   readinessProbe:
     httpGet:
       path: /order/health
-      port: 4443
-      scheme: HTTPS
+      port: 8080
+      scheme: HTTP
     successThreshold: 1
     failureThreshold: 3
     initialDelaySeconds: 3
