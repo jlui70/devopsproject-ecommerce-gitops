@@ -29,6 +29,14 @@ healthCheckerDeployment:
     limits:
       memory: "128Mi"
       cpu: "100m"
+  startupProbe:
+    httpGet:
+      path: /healthchecks/health
+      port: 8080
+      scheme: HTTP
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
   livenessProbe:
     httpGet:
       path: /healthchecks/health
@@ -36,7 +44,7 @@ healthCheckerDeployment:
       scheme: HTTP
     successThreshold: 1
     failureThreshold: 3
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     timeoutSeconds: 15
     periodSeconds: 60
   readinessProbe:

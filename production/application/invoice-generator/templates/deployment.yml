@@ -51,6 +51,8 @@ spec:
           {{- toYaml .Values.invoiceGeneratorDeployment.volumeMounts | nindent 8 }}
         resources:
           {{- toYaml .Values.invoiceGeneratorDeployment.resources | nindent 10 }}
+        startupProbe:
+          {{- toYaml .Values.invoiceGeneratorDeployment.startupProbe | nindent 10 }}
         livenessProbe:
           {{- toYaml .Values.invoiceGeneratorDeployment.livenessProbe | nindent 10 }}
         readinessProbe:

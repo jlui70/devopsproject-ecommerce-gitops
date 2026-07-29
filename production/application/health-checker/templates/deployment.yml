@@ -51,6 +51,8 @@ spec:
           {{- toYaml .Values.healthCheckerDeployment.volumeMounts | nindent 8 }}
         resources:
           {{- toYaml .Values.healthCheckerDeployment.resources | nindent 10 }}
+        startupProbe:
+          {{- toYaml .Values.healthCheckerDeployment.startupProbe | nindent 10 }}
         livenessProbe:
           {{- toYaml .Values.healthCheckerDeployment.livenessProbe | nindent 10 }}
         readinessProbe:

@@ -58,6 +58,14 @@ orderDeployment:
     limits:
       memory: "256Mi"
       cpu: "256m"
+  startupProbe:
+    httpGet:
+      path: /order/health
+      port: 8080
+      scheme: HTTP
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
   livenessProbe:
     httpGet:
       path: /order/health
@@ -65,7 +73,7 @@ orderDeployment:
       scheme: HTTP
     successThreshold: 1
     failureThreshold: 3
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     timeoutSeconds: 15
     periodSeconds: 60
   readinessProbe:
