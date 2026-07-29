@@ -19,6 +19,10 @@ resources:
 - infrastructure/network-policies/ingress.yml
 - infrastructure/network-policies/egress.yml
 - infrastructure/analysis-template.yml
+- infrastructure/kyverno/restrict-image-registries.yml
+- infrastructure/kyverno/require-resource-limits.yml
+- infrastructure/kyverno/disallow-privilege-escalation.yml
+- infrastructure/kyverno/require-non-root.yml
 
 helmGlobals:
   chartHome: application

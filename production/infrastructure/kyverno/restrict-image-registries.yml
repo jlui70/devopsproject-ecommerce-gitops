@@ -1,0 +1,26 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+  annotations:
+    policies.kyverno.io/title: Restrict Image Registries
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >
+      Permite apenas imagens do ECR 692430448478.
+      Impede uso de imagens de registries externos não autorizados.
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: only-ecr
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [dpe]
+      validate:
+        message: "Apenas imagens do ECR 692430448478.dkr.ecr.us-east-1.amazonaws.com são permitidas"
+        pattern:
+          spec:
+            containers:
+              - image: "692430448478.dkr.ecr.us-east-1.amazonaws.com/*"
