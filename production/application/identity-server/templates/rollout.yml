@@ -37,6 +37,15 @@ spec:
           matchLabels:
             app: {{ $.Release.Name }}
       {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: {{ .Release.Name }}
+                topologyKey: kubernetes.io/hostname
       securityContext:
         {{- toYaml .Values.identityServerDeployment.securityContext | nindent 8 }}
       serviceAccount: {{ .Values.identityServerDeployment.serviceAccount }}
