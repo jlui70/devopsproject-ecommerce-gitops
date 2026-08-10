@@ -8,17 +8,16 @@ commonLabels:
 configurations:
 - configurations/namereference.yml
 resources:
+- ../base
 - infrastructure/namespace.yml
 - infrastructure/config-map.yml
-- infrastructure/service-account.yml
-- infrastructure/secrets/cluster-secret-store.yml
+- infrastructure/secrets/secret-store.yml
 - infrastructure/secrets/app-secrets.yml
 - infrastructure/cert-manager/certificate.yml
-- infrastructure/secrets/mongo-certificate.yml
 - infrastructure/ingress.yml
 - infrastructure/network-policies/ingress.yml
 - infrastructure/network-policies/egress.yml
-- infrastructure/analysis-template.yml
+- infrastructure/network-policies/deny-staging-ingress.yml
 - infrastructure/kyverno/restrict-image-registries.yml
 - infrastructure/kyverno/require-resource-limits.yml
 - infrastructure/kyverno/disallow-privilege-escalation.yml
@@ -57,19 +56,19 @@ helmCharts:
 images:
 - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
   newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
-  newTag: latest
+  newTag: bootstrap-20260810150544
 - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
   newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
-  newTag: latest
+  newTag: bootstrap-20260810150544
 - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
   newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
-  newTag: latest
+  newTag: bootstrap-20260810150544
 - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
   newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
-  newTag: latest
+  newTag: bootstrap-20260810150544
 - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
   newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
-  newTag: latest
+  newTag: bootstrap-20260810150544
 - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
   newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
-  newTag: latest
+  newTag: bootstrap-20260810150544
