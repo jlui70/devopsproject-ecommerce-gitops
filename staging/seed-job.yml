@@ -9,7 +9,8 @@
 # vez — é isso que cria a tabela `products` que o seed usa. Antes disso, o Job falha
 # com "relation products does not exist", o que é esperado, não um bug de config.
 # Reexecutar manualmente quando staging já estiver com os pods do app Running:
-#   kubectl delete job -n staging seed-postgres seed-mongo
+#   kubectl delete job -n staging dpe-stg-seed-postgres-stg dpe-stg-seed-mongo-stg
+#   (nomes reais tem o prefixo/sufixo do kustomize, nao "seed-postgres"/"seed-mongo")
 #   kubectl apply -f staging/seed-job.yml
 # (Jobs do Kubernetes não são re-executados automaticamente pelo sync do ArgoCD
 # depois de completar ou esgotar o backoffLimit — apagar e reaplicar é o padrão.
