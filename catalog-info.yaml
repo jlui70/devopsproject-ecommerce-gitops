@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: devopsproject-ecommerce-gitops
+  description: GitOps manifests for the devopsproject-ecommerce platform.
+spec:
+  type: infrastructure
+  lifecycle: experimental
+  owner: group:default/platform-admins
