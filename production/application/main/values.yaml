@@ -7,6 +7,10 @@ mainDeployment:
   previewServiceName: dpe-main-preview-prod
   blueGreen:
     autoPromotionEnabled: true
+    # ADR-0013 — nome do AnalysisTemplate (base/analysis-template.yml) pos
+    # prefixo/sufixo do Kustomize deste overlay. Overlay staging/ sobrescreve
+    # via valuesInline com o nome correspondente ao seu proprio namePrefix.
+    analysisTemplateName: dpe-health-check-prod
   configMap: dpe-config-map-prod
   secret: dpe-app-secrets-prod
   replicaCount: 1

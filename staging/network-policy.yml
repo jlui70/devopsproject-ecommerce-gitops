@@ -1,0 +1,116 @@
+# ADR-0013 Decisao 4 — namespace staging comeca de default-deny (ingress e
+# egress) e so' permite explicitamente o necessario. Ao contrario do lado dpe
+# (ver production/infrastructure/network-policies/deny-staging-ingress.yml),
+# aqui NAO ha nenhuma regra ampla preexistente — este e' o controle
+# efetivamente comprovavel do isolamento dpe <-> staging: staging nunca
+# consegue iniciar trafego em direcao a dpe nem a qualquer outro destino nao
+# listado abaixo.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-network-policy
+  namespace: staging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress: []
+---
+# Allow ingress: trafego externo via ALB interno (staging.* , scheme:
+# internal) + intra-namespace (apps chamando umas as outras) + ArgoCD
+# (health-check da sincronizacao) + argo-rollouts (prePromotionAnalysis do
+# Blue/Green ensaiado em staging).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress-network-policy
+  namespace: staging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 4443
+    - from:
+        - podSelector:
+            matchLabels:
+              application: devopsproject-ecommerce
+      ports:
+        - port: 4443
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: argocd
+      ports:
+        - port: 4443
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: argo-rollouts
+      ports:
+        - port: 4443
+---
+# Allow egress: DNS (kube-dns), intra-namespace, e os endpoints AWS -stg
+# (Aurora-stg, DocumentDB-stg, SQS/Secrets Manager/SES). Sem allow para o
+# namespace dpe — isolamento comprovavel do lado staging (ver cabecalho).
+# Os endpoints AWS saem via IP publico/NAT ou VPC Endpoint dentro da mesma
+# VPC (10.0.0.0/24, stack networking) — nao ha um CIDR de servico dedicado
+# por namespace neste cluster (CNI Antrea sem IPAM por namespace), entao o
+# allow abaixo cobre a faixa da VPC; o isolamento dpe<->staging real vem da
+# ausencia de qualquer regra de egress para pods/servicos do namespace dpe.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: egress-network-policy
+  namespace: staging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # NOTA (achado de implementacao): o transformer commonLabels do Kustomize
+    # injeta "application: devopsproject-ecommerce" tambem em podSelector.
+    # matchLabels de peers de NetworkPolicy (nao so' em metadata.labels) —
+    # confirmado tambem em production/infrastructure/network-policies/egress.yml
+    # (pre-existente, la' inofensivo pois ha' um ipBlock 0.0.0.0/0 sem porta
+    # cobrindo o mesmo trafego). Aqui, sem esse blanket rule, um
+    # `podSelector: {k8s-app: kube-dns}` ficaria poluido com um label extra
+    # que os pods do CoreDNS/kube-dns nunca tem, quebrando a resolucao DNS.
+    # Por isso o allow de DNS usa apenas namespaceSelector (kube-system
+    # inteiro, porta 53) — mesmo padrao ja usado em ingress.yml/egress.yml de
+    # producao para kube-system/argocd, que NAO sofrem essa poluicao (o
+    # transformer nao injeta em namespaceSelector.matchLabels).
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              application: devopsproject-ecommerce
+      ports:
+        - port: 4443
+    - to:
+        # Aurora-stg (writer endpoint direto, sem RDS Proxy, ADR-0012),
+        # DocumentDB-stg, SQS/Secrets Manager/SES via NAT/VPC Endpoint — VPC
+        # inteira (10.0.0.0/24, devopsproject-ecommerce-iac/terraform/networking).
+        - ipBlock:
+            cidr: 10.0.0.0/24
+      ports:
+        - port: 5432
+          protocol: TCP
+        - port: 27017
+          protocol: TCP
+        - port: 443
+          protocol: TCP

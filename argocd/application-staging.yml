@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devopsproject-ecommerce-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/jlui70/devopsproject-ecommerce-gitops
+    targetRevision: HEAD
+    path: staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

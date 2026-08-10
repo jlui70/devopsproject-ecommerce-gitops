@@ -13,6 +13,10 @@ invoiceGeneratorDeployment:
     averageCpuUtilization: 50
     # ADR-0007 — KEDA ScaledObject parameters (replaces hpa.yml)
     keda:
+      # queueURL: consumed by templates/scaledobject.yml (ADR-0013 —
+      # parameterized so the staging/ overlay can point at InvoiceQueue-stg,
+      # ADR-0012, without touching the shared chart).
+      queueURL: https://sqs.us-east-1.amazonaws.com/692430448478/InvoiceQueue
       # pollingInterval: how often KEDA polls SQS for ApproximateNumberOfMessages (seconds)
       pollingInterval: 30
       # cooldownPeriod: time to wait after last active trigger before scaling to minReplicas (seconds)

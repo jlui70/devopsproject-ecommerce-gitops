@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# ADR-0013 — recursos verdadeiramente comuns entre os overlays production/ e
+# staging/. Migração incremental (ver nota de compatibilidade do ADR-0013): os
+# Helm charts continuam em production/application/ (reaproveitados pelo overlay
+# staging/ via chartHome relativo), e apenas os recursos abaixo — sem NENHUM
+# valor de ambiente hardcoded no corpo do manifest — foram extraídos para cá.
+#
+# NAO incluidos aqui (permanecem por overlay, ver justificativa no IMPL log):
+#   - namespace.yml       -> o nome do objeto Namespace NAO e afetado por
+#                            namePrefix/nameSuffix do Kustomize; compartilhar um
+#                            unico namespace.yml resultaria no mesmo nome "dpe"
+#                            em staging/. Cada overlay declara o seu.
+#   - config-map.yml       -> valores por definicao diferentes por ambiente.
+#   - kyverno/*.yml         -> ClusterPolicy e cluster-scoped; se incluido aqui,
+#                            cada overlay o renderiza com um nome PREFIXADO
+#                            diferente (dpe-...-prod vs dpe-stg-...-stg), criando
+#                            DOIS ClusterPolicy distintos que, para cobrir os dois
+#                            namespaces, teriam de listar match.namespaces:
+#                            [dpe, staging] nos dois -> auditoria duplicada do
+#                            mesmo par de namespaces. Mantido apenas em
+#                            production/infrastructure/kyverno/ por ora (escopo
+#                            trimado deste ADR); hardening futuro: mover para
+#                            base/ com match.namespaces parametrizado por patch.
+
+commonLabels:
+  application: devopsproject-ecommerce
+
+resources:
+- service-account.yml
+- analysis-template.yml
+- secrets/mongo-certificate.yml

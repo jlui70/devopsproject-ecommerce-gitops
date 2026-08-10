@@ -1,0 +1,12 @@
+nameReference:
+  - kind: Rollout
+    group: argoproj.io
+    fieldSpecs:
+      - kind: HorizontalPodAutoscaler
+        path: spec/scaleTargetRef/name
+  - kind: Deployment
+    group: apps
+    fieldSpecs:
+      - kind: ScaledObject
+        group: keda.sh
+        path: spec/scaleTargetRef/name

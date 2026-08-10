@@ -1,0 +1,17 @@
+# ADR-0013 Decisao 6 — sizing conservador: ~6 microsservicos x 1 replica
+# (health-checker, identity-server, invoice-generator, main, notificator,
+# order) + Job de seed efemero (ADR-0012) + margem. Protege a capacidade do
+# cluster compartilhado (workers t3.micro) para producao.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota
+  namespace: staging
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: "4Gi"
+    limits.cpu: "4"
+    limits.memory: "8Gi"
+    pods: "20"
+    persistentvolumeclaims: "5"

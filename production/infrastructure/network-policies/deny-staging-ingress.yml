@@ -1,0 +1,49 @@
+# ADR-0013 Decisao 4 / guardrail ADR-0011 — isolamento dpe <-> staging, lado dpe.
+#
+# ATENCAO (achado de implementacao, ver IMPL-ADR-0013): NetworkPolicy do
+# Kubernetes e um modelo estritamente allow-list e ADITIVO — quando varias
+# NetworkPolicy selecionam o mesmo pod para o mesmo policyType, o efetivo e a
+# UNIAO das regras de allow de TODAS elas; nao existe uma regra "deny" que
+# subtraia acesso concedido por outra policy. A policy existente
+# infrastructure/network-policies/ingress.yml (ADR-0004) contém uma regra
+# `ipBlock: 0.0.0.0/0` SEM restrição de porta, que already permite ingress de
+# QUALQUER origem (incluindo pods do namespace staging) em qualquer porta.
+# Enquanto essa regra existir, a policy abaixo NAO reduz esse acesso — ela
+# documenta e prepara o allow-list explicito (kube-system, argocd,
+# argo-rollouts, intra-namespace) para o dia em que a regra ipBlock de
+# ingress.yml for restringida a origens legítimas conhecidas (ex.: CIDR do
+# ALB/VPC), o que está fora do escopo deste ADR (pertence ao ADR-0004).
+#
+# O controle efetivo e atualmente comprovavel do isolamento dpe <-> staging e
+# o egress default-deny do lado staging (staging/network-policy.yml, este
+# mesmo ADR) — staging nunca consegue iniciar trafego em direcao a dpe, o que
+# cobre o risco de maior severidade (namespace de menor confianca alcançando
+# producao). Escalado como achado de arquitetura para revisão do ADR-0004.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-staging-ingress-network-policy
+  namespace: dpe
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              application: devopsproject-ecommerce
+      ports:
+        - port: 4443
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: argocd
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: argo-rollouts

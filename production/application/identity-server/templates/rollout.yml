@@ -18,7 +18,7 @@ spec:
       abortScaleDownDelaySeconds: 30
       prePromotionAnalysis:
         templates:
-        - templateName: dpe-health-check-prod
+        - templateName: {{ .Values.identityServerDeployment.blueGreen.analysisTemplateName }}
         args:
         - name: url
           value: https://{{ .Values.identityServerDeployment.previewServiceName }}.dpe.svc.cluster.local:{{ .Values.identityServerDeployment.containerPort }}/identity/health

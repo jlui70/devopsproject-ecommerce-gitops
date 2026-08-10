@@ -32,8 +32,10 @@ spec:
     - type: aws-sqs-queue
       metadata:
         # EmailNotificationQueue — same-account 692430448478, us-east-1
-        # Confirmed in production/infrastructure/config-map.yml
-        queueURL: https://sqs.us-east-1.amazonaws.com/692430448478/EmailNotificationQueue
+        # ADR-0013 — URL parametrizada por Values (overlay staging/ aponta
+        # para EmailNotificationQueue-stg, ADR-0012); default abaixo
+        # preserva o valor de producao usado ate aqui.
+        queueURL: {{ .Values.notificatorDeployment.autoScaling.keda.queueURL }}
         awsRegion: us-east-1
         # queueLength: target messages per replica. At 10 msgs/replica, with maxReplicas=3
         # and minReplicas=1, KEDA will scale 1→2 at 10 msgs, 2→3 at 20 msgs.

@@ -1,21 +1,20 @@
 orderDeployment:
   image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
   containerPort: 4443
-  nodePort: 30000
-  previewNodePort: 30001
-  activeServiceName: dpe-order-prod
-  previewServiceName: dpe-order-preview-prod
+  nodePort: 30100
+  previewNodePort: 30101
+  activeServiceName: dpe-stg-order-stg
+  previewServiceName: dpe-stg-order-preview-stg
   blueGreen:
     autoPromotionEnabled: true
     # ADR-0013 — nome do AnalysisTemplate (base/analysis-template.yml) pos
-    # prefixo/sufixo do Kustomize deste overlay. Overlay staging/ sobrescreve
-    # via valuesInline com o nome correspondente ao seu proprio namePrefix.
-    analysisTemplateName: dpe-health-check-prod
-  configMap: dpe-config-map-prod
-  secret: dpe-app-secrets-prod
+    # prefixo/sufixo deste overlay (dpe-stg- / -stg).
+    analysisTemplateName: dpe-stg-health-check-stg
+  configMap: dpe-stg-config-map-stg
+  secret: dpe-stg-app-secrets-stg
   replicaCount: 1
-  serviceAccount: dpe-sa-prod
-  imagePullSecrets: dpe-ecr-image-pull-credentials-prod
+  serviceAccount: dpe-stg-sa-stg
+  imagePullSecrets: dpe-stg-ecr-image-pull-credentials-stg
   autoScaling:
     minReplicas: 1
     maxReplicas: 3
@@ -50,18 +49,18 @@ orderDeployment:
   volumes:
   - name: kestrel
     secret:
-      secretName: dpe-kestrel-certificate-prod
-  volumeMounts: 
+      secretName: dpe-stg-kestrel-certificate-stg
+  volumeMounts:
   - name: kestrel
     readOnly: true
     mountPath: /dpe-backend/certificates/kestrel
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "256m"
+      memory: "64Mi"
+      cpu: "50m"
     limits:
-      memory: "256Mi"
-      cpu: "256m"
+      memory: "128Mi"
+      cpu: "100m"
   startupProbe:
     httpGet:
       path: /order/health

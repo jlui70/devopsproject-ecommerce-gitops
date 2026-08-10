@@ -1,0 +1,59 @@
+healthCheckerDeployment:
+  image: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+  containerPort: 4443
+  nodePort: 30105
+  configMap: dpe-stg-config-map-stg
+  secret: dpe-stg-app-secrets-stg
+  replicaCount: 1
+  serviceAccount: dpe-stg-sa-stg
+  imagePullSecrets: dpe-stg-ecr-image-pull-credentials-stg
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+  volumes:
+  - name: kestrel
+    secret:
+      secretName: dpe-stg-kestrel-certificate-stg
+  volumeMounts: 
+  - name: kestrel
+    readOnly: true
+    mountPath: /dpe-backend/certificates/kestrel
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  startupProbe:
+    httpGet:
+      path: /healthchecks/health
+      port: 8080
+      scheme: HTTP
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+  livenessProbe:
+    httpGet:
+      path: /healthchecks/health
+      port: 8080
+      scheme: HTTP
+    successThreshold: 1
+    failureThreshold: 3
+    initialDelaySeconds: 0
+    timeoutSeconds: 15
+    periodSeconds: 60
+  readinessProbe:
+    httpGet:
+      path: /healthchecks/health
+      port: 8080
+      scheme: HTTP
+    successThreshold: 1
+    failureThreshold: 3
+    initialDelaySeconds: 3
+    timeoutSeconds: 15
+    periodSeconds: 3

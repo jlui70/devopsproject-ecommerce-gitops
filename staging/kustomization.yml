@@ -1,0 +1,92 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: staging
+nameSuffix: -stg
+namePrefix: dpe-stg-
+commonLabels:
+  application: devopsproject-ecommerce
+configurations:
+- configurations/namereference.yml
+resources:
+- ../base
+- namespace.yml
+- configmap.yml
+- secret-store.yml
+- external-secret.yml
+- certificate.yml
+- network-policy.yml
+- resource-quota.yml
+- limit-range.yml
+- seed-job.yml
+- ingress.yml
+- pdb.yml
+
+helmGlobals:
+  chartHome: ../production/application
+
+# ADR-0013 — mesmos charts (templates) de production/application/, nao
+# duplicados (ver nota de compatibilidade do ADR). O delta de ambiente vem de
+# um valuesFile PROPRIO por app em staging/values/ (copia do values.yaml de
+# producao com os campos ambiente-especificos sobrescritos: nodePort dedicado
+# para nao colidir no cluster compartilhado, nomes de ConfigMap/Secret/
+# ServiceAccount/imagePullSecrets/volumes/Service pos-prefixo deste overlay,
+# nome do AnalysisTemplate correspondente ao renderizado a partir de
+# base/analysis-template.yml, URL da fila SQS -stg, e resources/replicaCount
+# reduzidos — Decisao 5/6).
+#
+# ACHADO DE IMPLEMENTACAO: o campo `valuesInline` + `valuesMerge: merge` do
+# HelmChart do Kustomize (que permitiria so' declarar o DELTA sobre o
+# valuesFile de producao, sem duplicar o arquivo inteiro) nao surtiu efeito
+# nesta versao do kustomize (v5.8.1 + --enable-helm) — o valuesFile venceu
+# silenciosamente sem qualquer erro/aviso. Optou-se por um valuesFile
+# completo por overlay (padrao Helm/Kustomize amplamente usado e
+# comprovadamente funcional) em vez de investigar mais a fundo um recurso que
+# se mostrou nao-confiavel nesta toolchain. Ver IMPL-ADR-0013.
+helmCharts:
+- name: identity-server
+  releaseName: identity-server
+  repo: identity-server
+  valuesFile: values/identity-server.yaml
+- name: main
+  releaseName: main
+  repo: main
+  valuesFile: values/main.yaml
+- name: order
+  releaseName: order
+  repo: order
+  valuesFile: values/order.yaml
+- name: health-checker
+  releaseName: health-checker
+  repo: health-checker
+  valuesFile: values/health-checker.yaml
+- name: invoice-generator
+  releaseName: invoice-generator
+  repo: invoice-generator
+  valuesFile: values/invoice-generator.yaml
+- name: notificator
+  releaseName: notificator
+  repo: notificator
+  valuesFile: values/notificator.yaml
+
+# ADR-0013 Decisao 7 — staging referencia a tag de BUILD (sha-<git-sha>), nao
+# a tag de release promovida (essa vive em production/). CI (ADR-0014)
+# atualiza o valor abaixo a cada push via commit neste overlay.
+images:
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+  newTag: sha-placeholder
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+  newTag: sha-placeholder
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+  newTag: sha-placeholder
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+  newTag: sha-placeholder
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+  newTag: sha-placeholder
+- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+  newTag: sha-placeholder

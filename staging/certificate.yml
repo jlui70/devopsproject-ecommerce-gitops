@@ -1,0 +1,23 @@
+# mTLS interno Kestrel (:4443) — equivalente ao
+# production/infrastructure/cert-manager/certificate.yml, escopado ao
+# namespace staging. Mesmo ClusterIssuer (dpe-ca-issuer e' cluster-scoped,
+# reusavel entre namespaces).
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kestrel-certificate
+  namespace: staging
+spec:
+  secretName: dpe-stg-kestrel-certificate-stg
+  duration: 8760h
+  renewBefore: 720h
+  commonName: dpe-stg-backend.staging.svc.cluster.local
+  dnsNames:
+    - "*.staging.svc.cluster.local"
+    - "*.staging"
+  issuerRef:
+    name: dpe-ca-issuer
+    kind: ClusterIssuer
+  privateKey:
+    algorithm: RSA
+    size: 2048

@@ -1,0 +1,167 @@
+# ADR-0012 (dados sintéticos -stg) / ADR-0013 (hospeda o Job no overlay
+# staging/, coberto pelo ResourceQuota/LimitRange). Job idempotente
+# (TRUNCATE + INSERT) para Aurora Serverless v2 -stg e DocumentDB -stg.
+# Esqueleto funcional simples — dados de lab, nao um pipeline de seed
+# elaborado. Runbook (ADR-0013): "resetar staging (re-rodar Job de seed)" —
+# reexecutar via `kubectl create job --from=job/... -n staging` ou apagar e
+# deixar o ArgoCD recriar (o Job nao e' re-executado automaticamente pelo
+# sync do ArgoCD apos completar; ver anotacao de sync-wave/hook abaixo).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seed-postgres-script
+  namespace: staging
+data:
+  seed.sql: |
+    -- Idempotente: TRUNCATE + INSERT. Dados sinteticos de lab (ADR-0012).
+    TRUNCATE TABLE IF EXISTS products RESTART IDENTITY CASCADE;
+    INSERT INTO products (name, price, stock) VALUES
+      ('Staging Sample Product 1', 19.90, 100),
+      ('Staging Sample Product 2', 29.90, 50),
+      ('Staging Sample Product 3', 9.90, 200);
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seed-mongo-script
+  namespace: staging
+data:
+  seed.js: |
+    // Idempotente: drop + insert. Dados sinteticos de lab (ADR-0012).
+    db.reports.deleteMany({});
+    db.reports.insertMany([
+      { name: "staging-seed-report-1", createdAt: new Date(), synthetic: true },
+      { name: "staging-seed-report-2", createdAt: new Date(), synthetic: true }
+    ]);
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-postgres
+  namespace: staging
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: seed-postgres
+        application: devopsproject-ecommerce
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: seed-postgres
+          image: postgres:16-alpine
+          command: ["psql"]
+          args:
+            - "-f"
+            - "/seed/seed.sql"
+          envFrom:
+            - configMapRef:
+                name: dpe-stg-config-map-stg
+            - secretRef:
+                name: dpe-stg-app-secrets-stg
+          env:
+            # CONNECTIONSTRINGS__DEFAULT (via ESO) traz host/user/senha da
+            # Aurora -stg; PGPASSWORD/PGHOST/etc mapeados no runbook de seed
+            # (ADR-0012) — placeholder ate a stack serverless -stg existir.
+            - name: PGHOST
+              value: "<TERRAFORM_OUTPUT:aurora_stg_endpoint>"
+            - name: PGDATABASE
+              value: "devopsproject"
+            - name: PGUSER
+              value: "postgres"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: seed-script
+              mountPath: /seed
+              readOnly: true
+      volumes:
+        - name: seed-script
+          configMap:
+            name: dpe-stg-seed-postgres-script-stg
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-mongo
+  namespace: staging
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: seed-mongo
+        application: devopsproject-ecommerce
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: seed-mongo
+          image: mongo:7
+          command: ["mongosh"]
+          args:
+            - "--tls"
+            - "--tlsCAFile=/certs/certificate.pem"
+            - "$(MONGO_URI)"
+            - "/seed/seed.js"
+          envFrom:
+            - configMapRef:
+                name: dpe-stg-config-map-stg
+            - secretRef:
+                name: dpe-stg-app-secrets-stg
+          env:
+            # MONGO_URI resolvido a partir de CONNECTIONSTRINGS__MONGO (via
+            # ESO) — mapeado no runbook de seed (ADR-0012); placeholder ate a
+            # stack serverless -stg existir.
+            - name: MONGO_URI
+              value: "<TERRAFORM_OUTPUT:documentdb_stg_connection_string>"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: seed-script
+              mountPath: /seed
+              readOnly: true
+            - name: mongo-cert
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: seed-script
+          configMap:
+            name: dpe-stg-seed-mongo-script-stg
+        - name: mongo-cert
+          secret:
+            secretName: dpe-stg-mongo-certificate-stg
