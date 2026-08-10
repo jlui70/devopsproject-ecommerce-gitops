@@ -1,11 +1,21 @@
 # ADR-0012 (dados sintéticos -stg) / ADR-0013 (hospeda o Job no overlay
 # staging/, coberto pelo ResourceQuota/LimitRange). Job idempotente
 # (TRUNCATE + INSERT) para Aurora Serverless v2 -stg e DocumentDB -stg.
-# Esqueleto funcional simples — dados de lab, nao um pipeline de seed
-# elaborado. Runbook (ADR-0013): "resetar staging (re-rodar Job de seed)" —
-# reexecutar via `kubectl create job --from=job/... -n staging` ou apagar e
-# deixar o ArgoCD recriar (o Job nao e' re-executado automaticamente pelo
-# sync do ArgoCD apos completar; ver anotacao de sync-wave/hook abaixo).
+#
+# ATENÇÃO — pré-requisito de ordem (achado ao vivo em 2026-08-10, não corrigido
+# automaticamente por sync-wave — decisão consciente, ver nota abaixo): este Job só
+# tem chance de completar com sucesso DEPOIS que o serviço `order` de staging já
+# subiu com uma imagem real (Fase 11/CI-CD) e rodou suas migrations pelo menos uma
+# vez — é isso que cria a tabela `products` que o seed usa. Antes disso, o Job falha
+# com "relation products does not exist", o que é esperado, não um bug de config.
+# Reexecutar manualmente quando staging já estiver com os pods do app Running:
+#   kubectl delete job -n staging seed-postgres seed-mongo
+#   kubectl apply -f staging/seed-job.yml
+# (Jobs do Kubernetes não são re-executados automaticamente pelo sync do ArgoCD
+# depois de completar ou esgotar o backoffLimit — apagar e reaplicar é o padrão.
+# Não usamos argocd.argoproj.io/hook aqui de propósito: um PostSync hook rodaria no
+# mesmo sync que cria os Deployments, antes das migrations acontecerem de verdade —
+# não resolveria a dependência de fato, só mudaria quando a falha aparece.)
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,7 +24,10 @@ metadata:
 data:
   seed.sql: |
     -- Idempotente: TRUNCATE + INSERT. Dados sinteticos de lab (ADR-0012).
-    TRUNCATE TABLE IF EXISTS products RESTART IDENTITY CASCADE;
+    -- TRUNCATE nao aceita "IF EXISTS" no Postgres (corrigido em 2026-08-10) --
+    -- se a tabela nao existir ainda (app de staging sem migrations rodadas),
+    -- o script falha aqui de proposito, com uma mensagem clara.
+    TRUNCATE TABLE products RESTART IDENTITY CASCADE;
     INSERT INTO products (name, price, stock) VALUES
       ('Staging Sample Product 1', 19.90, 100),
       ('Staging Sample Product 2', 29.90, 50),
@@ -57,25 +70,33 @@ spec:
       containers:
         - name: seed-postgres
           image: postgres:16-alpine
-          command: ["psql"]
+          # Corrigido em 2026-08-10: PGPASSWORD nao existia (psql falhava sem senha
+          # em modo nao-interativo). O secret dpe-stg-app-secrets-stg so tem a
+          # connection string combinada em formato ADO.NET (User ID=...;Password=...),
+          # que o psql nao entende nativamente (formato/palavras-chave diferentes do
+          # libpq conninfo) — extraida aqui via shell antes de chamar psql.
+          command: ["sh", "-c"]
           args:
-            - "-f"
-            - "/seed/seed.sql"
+            - |
+              set -eu
+              export PGPASSWORD=$(echo "$CONNECTIONSTRINGS__DEFAULT" | sed -n 's/.*Password=\([^;]*\);.*/\1/p')
+              exec psql -f /seed/seed.sql
           envFrom:
             - configMapRef:
                 name: dpe-stg-config-map-stg
             - secretRef:
                 name: dpe-stg-app-secrets-stg
           env:
-            # CONNECTIONSTRINGS__DEFAULT (via ESO) traz host/user/senha da
-            # Aurora -stg; PGPASSWORD/PGHOST/etc mapeados no runbook de seed
-            # (ADR-0012) — placeholder ate a stack serverless -stg existir.
+            # PGHOST: endpoint do Aurora -stg, muda a cada rebuild do cluster
+            # (sufixo aleatorio do RDS) — placeholder substituido no deploy, mesmo
+            # padrao ja usado pro ARN do certificado ACM (RUNBOOK-deploy-do-zero.md).
+            # NAO sensivel (nao e credencial), diferente de PGPASSWORD acima.
             - name: PGHOST
-              value: "<TERRAFORM_OUTPUT:aurora_stg_endpoint>"
+              value: "devopsproject-stg-aurora.cluster-ccf86y6syo4g.us-east-1.rds.amazonaws.com"
             - name: PGDATABASE
-              value: "devopsproject"
+              value: "devopsprojectEcommerce"
             - name: PGUSER
-              value: "postgres"
+              value: "devopsprojectAdmin"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -121,23 +142,21 @@ spec:
       containers:
         - name: seed-mongo
           image: mongo:7
+          # Corrigido em 2026-08-10: nao precisa de placeholder nenhum — o secret
+          # dpe-stg-app-secrets-stg ja tem CONNECTIONSTRINGS__MONGO pronta em
+          # formato mongodb:// URI (username/senha/host ja embutidos), diferente da
+          # connection string do Postgres (formato ADO.NET, precisa de extracao).
           command: ["mongosh"]
           args:
             - "--tls"
             - "--tlsCAFile=/certs/certificate.pem"
-            - "$(MONGO_URI)"
+            - "$(CONNECTIONSTRINGS__MONGO)"
             - "/seed/seed.js"
           envFrom:
             - configMapRef:
                 name: dpe-stg-config-map-stg
             - secretRef:
                 name: dpe-stg-app-secrets-stg
-          env:
-            # MONGO_URI resolvido a partir de CONNECTIONSTRINGS__MONGO (via
-            # ESO) — mapeado no runbook de seed (ADR-0012); placeholder ate a
-            # stack serverless -stg existir.
-            - name: MONGO_URI
-              value: "<TERRAFORM_OUTPUT:documentdb_stg_connection_string>"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -147,10 +166,13 @@ spec:
           resources:
             requests:
               cpu: "50m"
-              memory: "64Mi"
+              # Corrigido em 2026-08-10: 128Mi causava OOMKilled — o mongosh
+              # moderno (cliente Node.js) precisa de mais memoria que o legado
+              # `mongo` shell.
+              memory: "192Mi"
             limits:
-              cpu: "200m"
-              memory: "128Mi"
+              cpu: "300m"
+              memory: "384Mi"
           volumeMounts:
             - name: seed-script
               mountPath: /seed

@@ -1,0 +1,75 @@
+# ADR-0014 "Ingress de staging (pertence ao overlay staging/ - ADR-0013)" — ALB
+# interno (proprio, nao compartilha o ALB/listener de producao), DNS publicado pelo
+# ExternalDNS (worker instance-role) a partir da anotacao de hostname — nenhum
+# aws_route53_record estatico.
+#
+# CORRIGIDO em 2026-08-10 (achado ao vivo no primeiro deploy real): a suposicao
+# original de um certificado wildcard "*.ecommerce-devopsproject.com" ja existente
+# (ADR-0010) estava errada — a conta so tem o certificado single-domain de producao.
+# Certificado dedicado criado em terraform/server/acm.staging-backend.tf (output
+# staging_backend_acm_certificate_arn), ARN preenchido abaixo.
+#
+# ATENCAO — este arquivo ficou vazio (0 bytes) num incidente de edicao ao vivo em
+# 2026-08-10 (sed -i com redirecionamento mal-sucedido) e foi commitado assim sem
+# ninguem perceber, porque um YAML vazio nao gera erro no ArgoCD/kustomize — so nao
+# cria nenhum recurso. Reconstruido a partir do conteudo original + ARN real.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/e12d8b4e-48d0-4c06-bcd6-2ef06d479abf
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/load-balancer-name: dpe-stg-ingress-stg
+    alb.ingress.kubernetes.io/scheme: internal
+    external-dns.alpha.kubernetes.io/hostname: staging.ecommerce-devopsproject.com
+    alb.ingress.kubernetes.io/security-groups: ecommerce-devopsproject-cluster-alb,ecommerce-devopsproject-cluster-worker
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /healthchecks
+            pathType: Prefix
+            backend:
+              service:
+                name: dpe-stg-health-checker-stg
+                port:
+                  number: 4443
+          - path: /identity
+            pathType: Prefix
+            backend:
+              service:
+                name: dpe-stg-identity-server-stg
+                port:
+                  number: 4443
+          - path: /invoice
+            pathType: Prefix
+            backend:
+              service:
+                name: dpe-stg-invoice-generator-stg
+                port:
+                  number: 4443
+          - path: /main
+            pathType: Prefix
+            backend:
+              service:
+                name: dpe-stg-main-stg
+                port:
+                  number: 4443
+          - path: /notificator
+            pathType: Prefix
+            backend:
+              service:
+                name: dpe-stg-notificator-stg
+                port:
+                  number: 4443
+          - path: /order
+            pathType: Prefix
+            backend:
+              service:
+                name: dpe-stg-order-stg
+                port:
+                  number: 4443
