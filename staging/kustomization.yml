@@ -71,19 +71,19 @@ helmCharts:
 images:
   - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
     newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
-    newTag: sha-dd692079679483ceb878be29799cc3a1af70053d
+    newTag: sha-f002695f3ac490f9f533c88f9a9b2dc1226427a8
   - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
     newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
-    newTag: sha-dd692079679483ceb878be29799cc3a1af70053d
+    newTag: sha-f002695f3ac490f9f533c88f9a9b2dc1226427a8
   - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
     newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
-    newTag: sha-dd692079679483ceb878be29799cc3a1af70053d
+    newTag: sha-f002695f3ac490f9f533c88f9a9b2dc1226427a8
   - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
     newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
-    newTag: sha-dd692079679483ceb878be29799cc3a1af70053d
+    newTag: sha-f002695f3ac490f9f533c88f9a9b2dc1226427a8
   - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
     newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
-    newTag: sha-dd692079679483ceb878be29799cc3a1af70053d
+    newTag: sha-f002695f3ac490f9f533c88f9a9b2dc1226427a8
   - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
     newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
-    newTag: sha-dd692079679483ceb878be29799cc3a1af70053d
+    newTag: sha-f002695f3ac490f9f533c88f9a9b2dc1226427a8
