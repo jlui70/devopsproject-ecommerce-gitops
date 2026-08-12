@@ -6,69 +6,65 @@ namePrefix: dpe-
 commonLabels:
   application: devopsproject-ecommerce
 configurations:
-- configurations/namereference.yml
+  - configurations/namereference.yml
 resources:
-- ../base
-- infrastructure/namespace.yml
-- infrastructure/config-map.yml
-- infrastructure/secrets/secret-store.yml
-- infrastructure/secrets/app-secrets.yml
-- infrastructure/cert-manager/certificate.yml
-- infrastructure/ingress.yml
-- infrastructure/network-policies/ingress.yml
-- infrastructure/network-policies/egress.yml
-- infrastructure/network-policies/deny-staging-ingress.yml
-- infrastructure/kyverno/restrict-image-registries.yml
-- infrastructure/kyverno/require-resource-limits.yml
-- infrastructure/kyverno/disallow-privilege-escalation.yml
-- infrastructure/kyverno/require-non-root.yml
-
+  - ../base
+  - infrastructure/namespace.yml
+  - infrastructure/config-map.yml
+  - infrastructure/secrets/secret-store.yml
+  - infrastructure/secrets/app-secrets.yml
+  - infrastructure/cert-manager/certificate.yml
+  - infrastructure/ingress.yml
+  - infrastructure/network-policies/ingress.yml
+  - infrastructure/network-policies/egress.yml
+  - infrastructure/network-policies/deny-staging-ingress.yml
+  - infrastructure/kyverno/restrict-image-registries.yml
+  - infrastructure/kyverno/require-resource-limits.yml
+  - infrastructure/kyverno/disallow-privilege-escalation.yml
+  - infrastructure/kyverno/require-non-root.yml
 helmGlobals:
   chartHome: application
-
 helmCharts:
-- name: identity-server
-  releaseName: identity-server
-  repo: identity-server
-  valuesFile: application/identity-server/values.yaml
-- name: main
-  releaseName: main
-  repo: main
-  valuesFile: application/main/values.yaml
-- name: order
-  releaseName: order
-  repo: order
-  valuesFile: application/order/values.yaml
-- name: health-checker
-  releaseName: health-checker
-  repo: health-checker
-  valuesFile: application/health-checker/values.yaml
-- name: invoice-generator
-  releaseName: invoice-generator
-  repo: invoice-generator
-  valuesFile: application/invoice-generator/values.yaml
-- name: notificator
-  releaseName: notificator
-  repo: notificator
-  valuesFile: application/notificator/values.yaml
-
-
+  - name: identity-server
+    releaseName: identity-server
+    repo: identity-server
+    valuesFile: application/identity-server/values.yaml
+  - name: main
+    releaseName: main
+    repo: main
+    valuesFile: application/main/values.yaml
+  - name: order
+    releaseName: order
+    repo: order
+    valuesFile: application/order/values.yaml
+  - name: health-checker
+    releaseName: health-checker
+    repo: health-checker
+    valuesFile: application/health-checker/values.yaml
+  - name: invoice-generator
+    releaseName: invoice-generator
+    repo: invoice-generator
+    valuesFile: application/invoice-generator/values.yaml
+  - name: notificator
+    releaseName: notificator
+    repo: notificator
+    valuesFile: application/notificator/values.yaml
 images:
-- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
-  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
-  newTag: bootstrap-20260812103609
-- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
-  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
-  newTag: bootstrap-20260812103609
-- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
-  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
-  newTag: bootstrap-20260812103609
-- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
-  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
-  newTag: bootstrap-20260812103609
-- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
-  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
-  newTag: bootstrap-20260812103609
-- name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
-  newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
-  newTag: bootstrap-20260812103609
+  - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+    newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/health-checker
+    newTag: release-20260812-540d1d6
+  - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+    newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/identity-server
+    newTag: release-20260812-540d1d6
+  - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+    newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/invoice-generator
+    newTag: release-20260812-540d1d6
+  - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+    newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/main
+    newTag: release-20260812-540d1d6
+  - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+    newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/notificator
+    newTag: release-20260812-540d1d6
+  - name: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+    newName: 692430448478.dkr.ecr.us-east-1.amazonaws.com/devopsproject/prod/order
+    newTag: release-20260812-540d1d6
