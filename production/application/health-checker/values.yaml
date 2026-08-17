@@ -4,7 +4,7 @@ healthCheckerDeployment:
   nodePort: 30005
   configMap: dpe-config-map-prod
   secret: dpe-app-secrets-prod
-  replicaCount: 1
+  replicaCount: 2
   serviceAccount: dpe-sa-prod
   imagePullSecrets: dpe-ecr-image-pull-credentials-prod
   topologySpreadConstraints:
