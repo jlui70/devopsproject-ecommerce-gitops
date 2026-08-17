@@ -88,9 +88,16 @@ spec:
             - secretRef:
                 name: dpe-stg-app-secrets-stg
           env:
-            # PGHOST: endpoint do Aurora -stg, muda a cada rebuild do cluster
-            # (sufixo aleatorio do RDS) — placeholder substituido no deploy, mesmo
+            # PGHOST: endpoint do Aurora -stg, recalculado a cada rebuild do cluster
+            # e sincronizado aqui pelo `sync-gitops-outputs.sh staging-pghost`, mesmo
             # padrao ja usado pro ARN do certificado ACM (RUNBOOK-deploy-do-zero.md).
+            # O identificador do cluster (prefixo antes de ".cluster-") vem fixo do
+            # Terraform; o sufixo "cluster-<hash>" e' estavel por conta/regiao AWS,
+            # nao aleatorio por cluster — por isso o valor pode repetir identico
+            # entre ciclos de teardown+rebuild (confirmado ao vivo em 2026-08-17: o
+            # `sync-gitops-outputs.sh` rodou e reportou "nada mudou" porque o valor
+            # do ciclo anterior ja batia byte a byte com o novo). Nao e' sinal de
+            # falha do script nem de endpoint desatualizado.
             # NAO sensivel (nao e credencial), diferente de PGPASSWORD acima.
             - name: PGHOST
               value: "devopsproject-stg-aurora.cluster-ccf86y6syo4g.us-east-1.rds.amazonaws.com"
