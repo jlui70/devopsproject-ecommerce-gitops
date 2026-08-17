@@ -19,7 +19,6 @@ resources:
   - limit-range.yml
   - seed-job.yml
   - ingress.yml
-  - pdb.yml
 helmGlobals:
   chartHome: ../production/application
 # ADR-0013 — mesmos charts (templates) de production/application/, nao

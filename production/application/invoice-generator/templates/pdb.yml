@@ -3,7 +3,16 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ .Release.Name }}
 spec:
-  minAvailable: 1
+  # minAvailable so' faz sentido com >=2 replicas — com replicaCount:1 (staging,
+  # ADR-0013 Decisao 5), minAvailable:1 bloquearia QUALQUER evicao voluntaria do
+  # unico pod (0 allowed disruptions), travando node drain/scale-down/Velero
+  # indefinidamente. Antes deste fix (achado ao vivo em 2026-08-17), staging tinha
+  # um PDB duplicado: um estatico em staging/pdb.yml (minAvailable:0, correto,
+  # criado no ADR-0013 quando producao ainda nao tinha PDB nenhum) + este template
+  # do chart compartilhado (minAvailable:1 fixo, so' correto para producao) —
+  # ArgoCD reportava RepeatedResourceWarning e o valor aplicado de fato dependia
+  # da ordem do stream do kustomize build, nao-deterministico.
+  minAvailable: {{ if gt (int .Values.invoiceGeneratorDeployment.replicaCount) 1 }}1{{ else }}0{{ end }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}
