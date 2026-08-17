@@ -8,7 +8,7 @@ invoiceGeneratorDeployment:
   serviceAccount: dpe-sa-prod
   imagePullSecrets: dpe-ecr-image-pull-credentials-prod
   autoScaling:
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 3
     averageCpuUtilization: 50
     # ADR-0007 — KEDA ScaledObject parameters (replaces hpa.yml)
