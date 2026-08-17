@@ -76,11 +76,23 @@ spec:
           # connection string combinada em formato ADO.NET (User ID=...;Password=...),
           # que o psql nao entende nativamente (formato/palavras-chave diferentes do
           # libpq conninfo) — extraida aqui via shell antes de chamar psql.
+          #
+          # Corrigido em 2026-08-17: desde o fix de escaping do Npgsql (terraform
+          # secrets.app.tf), o valor vem entre aspas duplas com aspas internas
+          # duplicadas (Password="valor com "" se tiver aspas";), padrao ADO.NET —
+          # o sed antigo (ate o primeiro ";") pegava a senha errada, incluindo as
+          # aspas literais, gerando "password authentication failed" mesmo com a
+          # senha certa no Secrets Manager. Extracao em 3 passos: (1) protege aspas
+          # internas duplicadas com um marcador, (2) extrai entre as aspas restantes
+          # (agora inequivocas), (3) desfaz o marcador.
           command: ["sh", "-c"]
           args:
             - |
               set -eu
-              export PGPASSWORD=$(echo "$CONNECTIONSTRINGS__DEFAULT" | sed -n 's/.*Password=\([^;]*\);.*/\1/p')
+              export PGPASSWORD=$(echo "$CONNECTIONSTRINGS__DEFAULT" \
+                | sed 's/""/@@Q@@/g' \
+                | sed -n 's/.*Password="\([^"]*\)".*/\1/p' \
+                | sed 's/@@Q@@/"/g')
               exec psql -f /seed/seed.sql
           envFrom:
             - configMapRef:
