@@ -21,7 +21,7 @@ spec:
         - templateName: {{ .Values.orderDeployment.blueGreen.analysisTemplateName }}
         args:
         - name: url
-          value: https://{{ .Values.orderDeployment.previewServiceName }}.dpe.svc.cluster.local:{{ .Values.orderDeployment.containerPort }}/order/health
+          value: https://{{ .Values.orderDeployment.previewServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.orderDeployment.containerPort }}/order/health
   template:
     metadata:
       labels:

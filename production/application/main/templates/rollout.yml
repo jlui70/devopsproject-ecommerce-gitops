@@ -21,7 +21,7 @@ spec:
         - templateName: {{ .Values.mainDeployment.blueGreen.analysisTemplateName }}
         args:
         - name: url
-          value: https://{{ .Values.mainDeployment.previewServiceName }}.dpe.svc.cluster.local:{{ .Values.mainDeployment.containerPort }}/main/health
+          value: https://{{ .Values.mainDeployment.previewServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mainDeployment.containerPort }}/main/health
   template:
     metadata:
       labels:
