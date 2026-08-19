@@ -1,1 +1,2 @@
 - [site/ stack — ADR-0005 + ADR-0006](project_site_stack.md) — CloudFront/S3/WAF/OIDC roles, two-phase apply required for continuous deployment policy
+- [ADR-0013 GitOps multi-env](project_adr0013_gitops_multienv.md) — base/+staging/ overlay, kustomize/helm gotchas (valuesInline broken, commonLabels pollutes NetworkPolicy selectors), staging port/naming conventions
