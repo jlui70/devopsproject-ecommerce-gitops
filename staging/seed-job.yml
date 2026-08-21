@@ -1,22 +1,35 @@
-# ADR-0012 (dados sintéticos -stg) / ADR-0013 (hospeda o Job no overlay
-# staging/, coberto pelo ResourceQuota/LimitRange). Job idempotente
-# (TRUNCATE + INSERT) para Aurora Serverless v2 -stg e DocumentDB -stg.
+# ADR-0012 (dados sinteticos -stg) / ADR-0013 (hospeda o Job no overlay staging/,
+# coberto pelo ResourceQuota/LimitRange) / ADR-0023 (PostSync hook + correcao do
+# schema).
 #
-# ATENÇÃO — pré-requisito de ordem (achado ao vivo em 2026-08-10, não corrigido
-# automaticamente por sync-wave — decisão consciente, ver nota abaixo): este Job só
-# tem chance de completar com sucesso DEPOIS que o serviço `order` de staging já
-# subiu com uma imagem real (Fase 11/CI-CD) e rodou suas migrations pelo menos uma
-# vez — é isso que cria a tabela `products` que o seed usa. Antes disso, o Job falha
-# com "relation products does not exist", o que é esperado, não um bug de config.
-# Reexecutar manualmente quando staging já estiver com os pods do app Running:
-#   kubectl delete job -n staging dpe-stg-seed-postgres-stg dpe-stg-seed-mongo-stg
-#   (nomes reais tem o prefixo/sufixo do kustomize, nao "seed-postgres"/"seed-mongo")
-#   kubectl apply -f staging/seed-job.yml
-# (Jobs do Kubernetes não são re-executados automaticamente pelo sync do ArgoCD
-# depois de completar ou esgotar o backoffLimit — apagar e reaplicar é o padrão.
-# Não usamos argocd.argoproj.io/hook aqui de propósito: um PostSync hook rodaria no
-# mesmo sync que cria os Deployments, antes das migrations acontecerem de verdade —
-# não resolveria a dependência de fato, só mudaria quando a falha aparece.)
+# DUAS CORRECOES DO ADR-0023 (2026-08-21):
+#
+# 1. O SQL apontava para uma tabela que nunca existiu. Fazia
+#    `TRUNCATE TABLE products` e `INSERT INTO products (name, price, stock)`, mas o
+#    schema real gerado pelas migrations do EF Core e' "Product" (Id, Name, Price)
+#    mais uma tabela separada "Stock" (Id, ProductId, Quantity) — ver
+#    src/domains/DevOpsProjectEcommerce.Shared/Repositories/Configurations/
+#    ProductEntityTypeConfiguration.cs e .../Main.Domain/.../StockEntityTypeConfiguration.cs
+#    no repositorio da aplicacao. Em Postgres, `products` sem aspas nem sequer resolve
+#    para "Product" (o unquoted case-folding gera `products`, minusculo). O erro
+#    `relation "products" does not exist` era atribuido a uma corrida com as
+#    migrations, mas persistiria mesmo com as migrations concluidas.
+#
+# 2. Passa a ser um PostSync hook do ArgoCD. O cabecalho anterior registrava que o
+#    hook tinha sido evitado de proposito, com a justificativa de que "um PostSync
+#    hook rodaria no mesmo sync que cria os Deployments, antes das migrations
+#    acontecerem de verdade". Isso vale para hooks PreSync e Sync, mas nao para
+#    PostSync: o ArgoCD so' dispara a fase PostSync depois de todos os recursos do
+#    sync estarem Synced E Healthy, e a saude de um Deployment/Rollout depende da
+#    readiness probe passar — o que so' acontece depois de dbContext.Database.Migrate()
+#    completar no startup (Main/Modules/InfrastructureModule.cs). Com
+#    hook-delete-policy: BeforeHookCreation, o Job e' recriado a cada sync em vez de
+#    ficar preso no estado terminal do primeiro run, o que elimina o passo manual
+#    `kubectl delete job ...` + refresh (antiga Fase 11.8 do runbook).
+#
+# O SQL e o JS abaixo sao idempotentes por construcao (INSERT ... WHERE NOT EXISTS e
+# updateOne com upsert), nao por TRUNCATE/deleteMany — rodar a cada sync nao pode
+# apagar dado de ninguem que esteja usando o ambiente de staging.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,15 +37,34 @@ metadata:
   namespace: staging
 data:
   seed.sql: |
-    -- Idempotente: TRUNCATE + INSERT. Dados sinteticos de lab (ADR-0012).
-    -- TRUNCATE nao aceita "IF EXISTS" no Postgres (corrigido em 2026-08-10) --
-    -- se a tabela nao existir ainda (app de staging sem migrations rodadas),
-    -- o script falha aqui de proposito, com uma mensagem clara.
-    TRUNCATE TABLE products RESTART IDENTITY CASCADE;
-    INSERT INTO products (name, price, stock) VALUES
-      ('Staging Sample Product 1', 19.90, 100),
-      ('Staging Sample Product 2', 29.90, 50),
-      ('Staging Sample Product 3', 9.90, 200);
+    -- Schema real (EF Core): "Product"(Id, Name, Price) e "Stock"(Id, ProductId,
+    -- Quantity). Nomes entre aspas duplas porque o EF cria os identificadores em
+    -- PascalCase e o Postgres faz case-folding para minusculo sem elas.
+    --
+    -- Idempotente sem TRUNCATE: roda a cada sync do ArgoCD (PostSync hook) e nunca
+    -- apaga dados existentes.
+    INSERT INTO "Product" ("Name", "Price")
+    SELECT v.name, v.price
+    FROM (VALUES
+      ('Staging Sample Product 1', 19.90::numeric),
+      ('Staging Sample Product 2', 29.90::numeric),
+      ('Staging Sample Product 3',  9.90::numeric)
+    ) AS v(name, price)
+    WHERE NOT EXISTS (
+      SELECT 1 FROM "Product" p WHERE p."Name" = v.name
+    );
+
+    INSERT INTO "Stock" ("ProductId", "Quantity")
+    SELECT p."Id", v.quantity
+    FROM (VALUES
+      ('Staging Sample Product 1', 100),
+      ('Staging Sample Product 2',  50),
+      ('Staging Sample Product 3', 200)
+    ) AS v(name, quantity)
+    JOIN "Product" p ON p."Name" = v.name
+    WHERE NOT EXISTS (
+      SELECT 1 FROM "Stock" s WHERE s."ProductId" = p."Id"
+    );
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -41,18 +73,32 @@ metadata:
   namespace: staging
 data:
   seed.js: |
-    // Idempotente: drop + insert. Dados sinteticos de lab (ADR-0012).
-    db.reports.deleteMany({});
-    db.reports.insertMany([
-      { name: "staging-seed-report-1", createdAt: new Date(), synthetic: true },
-      { name: "staging-seed-report-2", createdAt: new Date(), synthetic: true }
-    ]);
+    // Idempotente por upsert, nao por deleteMany — roda a cada sync do ArgoCD
+    // (PostSync hook) e nao pode apagar dados de quem estiver usando staging.
+    db.reports.updateOne(
+      { name: "staging-seed-report-1" },
+      { $setOnInsert: { name: "staging-seed-report-1", createdAt: new Date(), synthetic: true } },
+      { upsert: true }
+    );
+    db.reports.updateOne(
+      { name: "staging-seed-report-2" },
+      { $setOnInsert: { name: "staging-seed-report-2", createdAt: new Date(), synthetic: true } },
+      { upsert: true }
+    );
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: seed-postgres
   namespace: staging
+  annotations:
+    # ADR-0023 — PostSync so' dispara depois de todos os recursos do sync estarem
+    # Synced E Healthy, ou seja, depois das migrations do EF terem rodado no startup
+    # dos pods. BeforeHookCreation apaga o Job da execucao anterior antes de criar a
+    # nova, o que torna o seed auto-recuperavel entre syncs (Jobs do Kubernetes nao
+    # sao reexecutados depois de Complete ou de esgotar o backoffLimit).
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 3
   ttlSecondsAfterFinished: 3600
@@ -144,6 +190,14 @@ kind: Job
 metadata:
   name: seed-mongo
   namespace: staging
+  annotations:
+    # ADR-0023 — PostSync so' dispara depois de todos os recursos do sync estarem
+    # Synced E Healthy, ou seja, depois das migrations do EF terem rodado no startup
+    # dos pods. BeforeHookCreation apaga o Job da execucao anterior antes de criar a
+    # nova, o que torna o seed auto-recuperavel entre syncs (Jobs do Kubernetes nao
+    # sao reexecutados depois de Complete ou de esgotar o backoffLimit).
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 3
   ttlSecondsAfterFinished: 3600
