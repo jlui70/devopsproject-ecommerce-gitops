@@ -5,6 +5,7 @@ mainDeployment:
   previewNodePort: 30107
   activeServiceName: dpe-stg-main-stg
   previewServiceName: dpe-stg-main-preview-stg
+  namespace: staging
   blueGreen:
     autoPromotionEnabled: true
     # ADR-0013 — nome do AnalysisTemplate (base/analysis-template.yml) pos

@@ -5,6 +5,7 @@ identityServerDeployment:
   previewNodePort: 30108
   activeServiceName: dpe-stg-identity-server-stg
   previewServiceName: dpe-stg-identity-server-preview-stg
+  namespace: staging
   blueGreen:
     autoPromotionEnabled: true
     # ADR-0013 — nome do AnalysisTemplate (base/analysis-template.yml) pos

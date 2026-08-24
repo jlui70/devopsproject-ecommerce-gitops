@@ -5,6 +5,9 @@ mainDeployment:
   previewNodePort: 30007
   activeServiceName: dpe-main-prod
   previewServiceName: dpe-main-preview-prod
+  # Namespace do overlay — consumido pela URL do prePromotionAnalysis
+  # (rollout.yml). Overlay staging/ sobrescreve com `staging`.
+  namespace: dpe
   blueGreen:
     autoPromotionEnabled: true
     # ADR-0013 — nome do AnalysisTemplate (base/analysis-template.yml) pos

@@ -20,8 +20,19 @@ spec:
         templates:
         - templateName: {{ .Values.orderDeployment.blueGreen.analysisTemplateName }}
         args:
+        # O namespace vem dos values, NAO de `.Release.Namespace`: quem renderiza este
+        # chart e o argocd-repo-server, e o Helm resolve `.Release.Namespace` pelo
+        # namespace do proprio pod (`argocd`), gerando uma URL que nao resolve
+        # (`...preview-prod.argocd.svc.cluster.local`). O `kustomize build` local
+        # resolve para o namespace certo, entao a divergencia so aparece no cluster.
+        # Achado ao vivo em 2026-08-24: os 3 Rollouts abortaram com
+        # `consecutiveErrors (5) > consecutiveErrorLimit (4)` e o cutover blue/green
+        # nunca aconteceu — producao seguiu servindo a revisao anterior. So aparece a
+        # partir da 2a revisao: o Argo Rollouts pula prePromotionAnalysis na primeira.
+        # O FQDN e obrigatorio: a metrica `web` e executada pelo controller do Argo
+        # Rollouts, que roda em outro namespace.
         - name: url
-          value: https://{{ .Values.orderDeployment.previewServiceName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.orderDeployment.containerPort }}/order/health
+          value: https://{{ .Values.orderDeployment.previewServiceName }}.{{ .Values.orderDeployment.namespace }}.svc.cluster.local:{{ .Values.orderDeployment.containerPort }}/order/health
   template:
     metadata:
       labels:
