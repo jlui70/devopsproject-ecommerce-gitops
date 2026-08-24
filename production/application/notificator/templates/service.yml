@@ -11,4 +11,12 @@ spec:
     app: {{ .Release.Name }}
   ports:
   - port: {{ .Values.notificatorDeployment.containerPort }}
+    name: https
     nodePort: {{ .Values.notificatorDeployment.nodePort }}
+  # Porta HTTP interna, mesmo padrao ja usado por main/order/identity-server. O pod
+  # sempre escutou nela (ASPNETCORE_URLS = "https://+:4443;http://+:8080"), mas o
+  # Service nao a expunha — o que obrigava o health-checker a consultar estes
+  # servicos pela URL publica. Ver Apendice A.18.
+  - port: 8080
+    targetPort: 8080
+    name: http

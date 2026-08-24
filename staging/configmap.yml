@@ -35,18 +35,23 @@ data:
   # clientes reais a partir de staging).
   EMAIL_TESTING_OVERRIDE: "luiz7030@gmail.com"
 
+  # ADR/Apendice A.18 — health checks internos usam DNS do cluster, nao a URL publica.
+  # Pela URL publica a requisicao sai pelo NAT (us-east-1) e o proprio WAF do projeto a
+  # bloqueia: a regra `geo-non-br` rotula todo trafego fora do Brasil como suspeito e a
+  # regra `block-suspicious-by-label` devolve 403. Resultado: os 6 checks apareciam
+  # Unhealthy com todos os servicos saudaveis. Mesmo padrao ja usado em BASEADDRESS__*.
   HEALTHCHECKSUI__HEALTHCHECKS__0__NAME: "Postgresql"
-  HEALTHCHECKSUI__HEALTHCHECKS__0__URI: "https://staging.ecommerce-devopsproject.com/healthchecks/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__0__URI: "http://dpe-stg-health-checker-stg.staging.svc.cluster.local:8080/healthchecks/health"
   HEALTHCHECKSUI__HEALTHCHECKS__1__NAME: "Main"
-  HEALTHCHECKSUI__HEALTHCHECKS__1__URI: "https://staging.ecommerce-devopsproject.com/main/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__1__URI: "http://dpe-stg-main-stg.staging.svc.cluster.local:8080/main/health"
   HEALTHCHECKSUI__HEALTHCHECKS__2__NAME: "Order"
-  HEALTHCHECKSUI__HEALTHCHECKS__2__URI: "https://staging.ecommerce-devopsproject.com/order/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__2__URI: "http://dpe-stg-order-stg.staging.svc.cluster.local:8080/order/health"
   HEALTHCHECKSUI__HEALTHCHECKS__3__NAME: "Notificator"
-  HEALTHCHECKSUI__HEALTHCHECKS__3__URI: "https://staging.ecommerce-devopsproject.com/notificator/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__3__URI: "http://dpe-stg-notificator-stg.staging.svc.cluster.local:8080/notificator/health"
   HEALTHCHECKSUI__HEALTHCHECKS__4__NAME: "Identity Server"
-  HEALTHCHECKSUI__HEALTHCHECKS__4__URI: "https://staging.ecommerce-devopsproject.com/identity/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__4__URI: "http://dpe-stg-identity-server-stg.staging.svc.cluster.local:8080/identity/health"
   HEALTHCHECKSUI__HEALTHCHECKS__5__NAME: "Invoice Generator"
-  HEALTHCHECKSUI__HEALTHCHECKS__5__URI: "https://staging.ecommerce-devopsproject.com/invoice/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__5__URI: "http://dpe-stg-invoice-generator-stg.staging.svc.cluster.local:8080/invoice/health"
 
   NOTIFICATOR__AWSSQSQUEUEMONITORPARAMS01__QUEUENAME: "EmailNotificationQueue-stg"
   NOTIFICATOR__AWSSQSQUEUEMONITORPARAMS01__QUEUEOWNERAWSACCOUNTID: "692430448478"

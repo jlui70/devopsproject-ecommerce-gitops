@@ -29,18 +29,23 @@ data:
   # IDENTITY__KEY e IDENTITY__ADMIN__USER__PASSWORD estao no Secret dpe-app-secrets-prod (via ESO)
   IDENTITY__ADMIN__USER: "admin@ecommerce-devopsproject.com"
 
+  # ADR/Apendice A.18 — health checks internos usam DNS do cluster, nao a URL publica.
+  # Pela URL publica a requisicao sai pelo NAT (us-east-1) e o proprio WAF do projeto a
+  # bloqueia: a regra `geo-non-br` rotula todo trafego fora do Brasil como suspeito e a
+  # regra `block-suspicious-by-label` devolve 403. Resultado: os 6 checks apareciam
+  # Unhealthy com todos os servicos saudaveis. Mesmo padrao ja usado em BASEADDRESS__*.
   HEALTHCHECKSUI__HEALTHCHECKS__0__NAME: "Postgresql"
-  HEALTHCHECKSUI__HEALTHCHECKS__0__URI: "https://ecommerce-devopsproject.com/healthchecks/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__0__URI: "http://dpe-health-checker-prod.dpe.svc.cluster.local:8080/healthchecks/health"
   HEALTHCHECKSUI__HEALTHCHECKS__1__NAME: "Main"
-  HEALTHCHECKSUI__HEALTHCHECKS__1__URI: "https://ecommerce-devopsproject.com/main/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__1__URI: "http://dpe-main-prod.dpe.svc.cluster.local:8080/main/health"
   HEALTHCHECKSUI__HEALTHCHECKS__2__NAME: "Order"
-  HEALTHCHECKSUI__HEALTHCHECKS__2__URI: "https://ecommerce-devopsproject.com/order/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__2__URI: "http://dpe-order-prod.dpe.svc.cluster.local:8080/order/health"
   HEALTHCHECKSUI__HEALTHCHECKS__3__NAME: "Notificator"
-  HEALTHCHECKSUI__HEALTHCHECKS__3__URI: "https://ecommerce-devopsproject.com/notificator/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__3__URI: "http://dpe-notificator-prod.dpe.svc.cluster.local:8080/notificator/health"
   HEALTHCHECKSUI__HEALTHCHECKS__4__NAME: "Identity Server"
-  HEALTHCHECKSUI__HEALTHCHECKS__4__URI: "https://ecommerce-devopsproject.com/identity/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__4__URI: "http://dpe-identity-server-prod.dpe.svc.cluster.local:8080/identity/health"
   HEALTHCHECKSUI__HEALTHCHECKS__5__NAME: "Invoice Generator"
-  HEALTHCHECKSUI__HEALTHCHECKS__5__URI: "https://ecommerce-devopsproject.com/invoice/health"
+  HEALTHCHECKSUI__HEALTHCHECKS__5__URI: "http://dpe-invoice-generator-prod.dpe.svc.cluster.local:8080/invoice/health"
 
   NOTIFICATOR__AWSSQSQUEUEMONITORPARAMS01__QUEUENAME: "EmailNotificationQueue"
   NOTIFICATOR__AWSSQSQUEUEMONITORPARAMS01__QUEUEOWNERAWSACCOUNTID: "692430448478"
