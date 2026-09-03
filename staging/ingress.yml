@@ -19,7 +19,7 @@ metadata:
   name: ingress
   annotations:
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/6a0ad0d0-0fe4-41cb-ba48-328b2de05bdd
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:692430448478:certificate/a558138c-a51b-4fe9-9524-15897af8ac15
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/load-balancer-name: dpe-stg-ingress-stg
